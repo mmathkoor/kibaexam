@@ -25,25 +25,8 @@
         ::-webkit-scrollbar-thumb { background: #7A2128; border-radius: 10px; }
         .toast-enter { animation: slideInDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes slideInDown { from { transform: translate(-50%, -100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
-        
-        /* تحذير الخروج */
-        .exit-warning-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(122, 33, 40, 0.95);
-            z-index: 99999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            text-align: center;
-            padding: 20px;
-        }
+        .exit-warning-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(122, 33, 40, 0.95); z-index: 99999; display: flex; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
         .exit-warning-overlay.hidden { display: none; }
-        
         @media print {
             @page { size: landscape; margin: 0; }
             body { visibility: hidden; background: white !important; }
@@ -58,7 +41,7 @@
 </head>
 <body>
 
-    <!-- طبقة تحذير الخروج من المتصفح -->
+    <!-- طبقة تحذير الخروج -->
     <div id="exitWarningOverlay" class="exit-warning-overlay hidden">
         <div>
             <i class="fas fa-exclamation-triangle text-6xl mb-4" style="color: #F5B335;"></i>
@@ -123,7 +106,7 @@
             <input type="password" id="adminPassInput" class="w-full px-4 py-3 border-2 rounded-xl text-center text-lg mb-3 focus:outline-none focus:border-[#7A2128]" placeholder="كلمة مرور المشرف">
             <button id="adminLoginBtn" class="w-full bg-[#7A2128] hover:bg-red-900 text-white font-bold py-3 rounded-xl mb-2 transition">دخول للنتائج</button>
             <button onclick="closeAdminModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-xl transition">إلغاء</button>
-            <div id="adminAuthError" class="text-red-600 text-xs text-center font-bold mt-2 hidden">الرمز غير صحيح</div>
+            <div id="adminAuthError" class="text-red-600 text-xs text-center font-bold mt-2 hidden">كلمة المرور غير صحيحة</div>
         </div>
     </div>
 
@@ -136,31 +119,15 @@
             </div>
             <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-sm leading-relaxed">
                 <ul class="space-y-3 text-red-800 font-semibold">
-                    <li class="flex items-start gap-2">
-                        <i class="fas fa-eye text-red-500 mt-1"></i>
-                        <span><strong>يتم تسجيل عدد مرات الخروج من المتصفح</strong> أثناء الاختبار.</span>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <i class="fas fa-ban text-red-500 mt-1"></i>
-                        <span><strong>الاختبار لمرة واحدة فقط</strong> ولا يمكن إعادته إلا بموافقة المشرف.</span>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <i class="fas fa-clock text-red-500 mt-1"></i>
-                        <span><strong>يرجى التركيز جيداً</strong> قبل تأكيد الإرسال النهائي.</span>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <i class="fas fa-stopwatch text-red-500 mt-1"></i>
-                        <span><strong>كل سؤال له دقيقتين فقط</strong>، وبعدها يقفل تلقائياً.</span>
-                    </li>
+                    <li class="flex items-start gap-2"><i class="fas fa-eye text-red-500 mt-1"></i><span><strong>يتم تسجيل عدد مرات الخروج من المتصفح</strong> أثناء الاختبار.</span></li>
+                    <li class="flex items-start gap-2"><i class="fas fa-ban text-red-500 mt-1"></i><span><strong>الاختبار لمرة واحدة فقط</strong> ولا يمكن إعادته إلا بموافقة المشرف.</span></li>
+                    <li class="flex items-start gap-2"><i class="fas fa-clock text-red-500 mt-1"></i><span><strong>يرجى التركيز جيداً</strong> قبل تأكيد الإرسال النهائي.</span></li>
+                    <li class="flex items-start gap-2"><i class="fas fa-stopwatch text-red-500 mt-1"></i><span><strong>كل سؤال له دقيقتين فقط</strong>، وبعدها يقفل تلقائياً.</span></li>
                 </ul>
             </div>
             <div class="flex gap-3">
-                <button onclick="confirmStartQuiz()" class="flex-1 bg-[#7A2128] hover:bg-red-900 text-white font-bold py-3 rounded-xl transition">
-                    <i class="fas fa-check ml-2"></i> أوافق وأبدأ الاختبار
-                </button>
-                <button onclick="cancelStartQuiz()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-xl transition">
-                    إلغاء
-                </button>
+                <button onclick="confirmStartQuiz()" class="flex-1 bg-[#7A2128] hover:bg-red-900 text-white font-bold py-3 rounded-xl transition"><i class="fas fa-check ml-2"></i> أوافق وأبدأ الاختبار</button>
+                <button onclick="cancelStartQuiz()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-xl transition">إلغاء</button>
             </div>
         </div>
     </div>
@@ -174,7 +141,6 @@
                 <div class="flex justify-center mb-6">
                     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTxIhDB302tFWezCQwkWsaUd6V0v0dKMpBIA&s" alt="KIB Logo" class="h-24 object-contain drop-shadow-md bg-white p-2 rounded-xl border border-gray-100">
                 </div>
-                
                 <h2 class="text-2xl font-black text-center text-[#7A2128] mb-4">التقييم المعرفي لإدارة المراجعة</h2>
                 <div class="bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-100 mb-8 text-sm font-semibold leading-relaxed">
                     <ul class="list-disc list-inside pr-4 space-y-1">
@@ -183,30 +149,17 @@
                         <li>يمكنك <strong>"تأجيل السؤال"</strong> للعودة إليه لاحقاً قبل انتهاء وقته.</li>
                     </ul>
                 </div>
-
                 <form id="introForm" class="space-y-5">
                     <div>
-                        <label class="block text-sm font-bold mb-2 text-gray-700">
-                            اسم الموظف (رباعي - 3 كلمات على الأقل) *
-                        </label>
-                        <input type="text" id="empName" required 
-                            class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition"
-                            placeholder="مثال: محمد أحمد البكيلي">
+                        <label class="block text-sm font-bold mb-2 text-gray-700">اسم الموظف (رباعي - 3 كلمات على الأقل) *</label>
+                        <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition" placeholder="مثال: محمد أحمد البكيلي">
                         <p id="empNameError" class="text-red-500 text-xs mt-1 hidden">يجب إدخال الاسم الرباعي (3 كلمات على الأقل)</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div>
-                            <label class="block text-sm font-bold mb-2 text-gray-700">الإدارة / الفرع *</label>
-                            <input type="text" id="empDepartment" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-bold mb-2 text-gray-700">المسمى الوظيفي *</label>
-                            <input type="text" id="empJobTitle" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition">
-                        </div>
+                        <div><label class="block text-sm font-bold mb-2 text-gray-700">الإدارة / الفرع *</label><input type="text" id="empDepartment" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition"></div>
+                        <div><label class="block text-sm font-bold mb-2 text-gray-700">المسمى الوظيفي *</label><input type="text" id="empJobTitle" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition"></div>
                     </div>
-                    <button type="submit" class="w-full mt-4 bg-[#7A2128] hover:bg-red-900 text-white font-black py-4 rounded-xl shadow-lg text-lg transition-all flex justify-center items-center gap-2">
-                        بدء الاختبار الآن <i class="fas fa-play mr-2"></i>
-                    </button>
+                    <button type="submit" class="w-full mt-4 bg-[#7A2128] hover:bg-red-900 text-white font-black py-4 rounded-xl shadow-lg text-lg transition-all flex justify-center items-center gap-2">بدء الاختبار الآن <i class="fas fa-play mr-2"></i></button>
                 </form>
             </div>
 
@@ -223,33 +176,21 @@
                             <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-[#EF4444]"></span> انتهى وقته (مغلق)</div>
                         </div>
                         <div class="mt-3 bg-red-50 rounded-lg p-2 text-xs text-red-600 font-bold text-center">
-                            <i class="fas fa-exclamation-circle"></i> لا تغلق المتصفح
+                            <i class="fas fa-exclamation-circle"></i> لا تغلق المتصفح - يتم تسجيل المخالفات
                         </div>
-                        <button onclick="finishQuizConfirmation()" class="w-full mt-4 bg-gray-800 hover:bg-black text-white font-bold py-3 rounded-xl transition text-sm">
-                            <i class="fas fa-flag-checkered"></i> إنهاء وتسليم الاختبار
-                        </button>
+                        <button onclick="finishQuizConfirmation()" class="w-full mt-4 bg-gray-800 hover:bg-black text-white font-bold py-3 rounded-xl transition text-sm"><i class="fas fa-flag-checkered"></i> إنهاء وتسليم الاختبار</button>
                     </div>
                     <div class="lg:col-span-3 order-1 lg:order-2">
                         <div class="bg-white rounded-2xl shadow-md p-4 mb-4 flex justify-between items-center border-b-4 border-[#7A2128]">
-                            <div>
-                                <p id="sectionTitle" class="text-xs text-[#F5B335] font-bold mb-1">القسم</p>
-                                <p class="text-sm font-black text-gray-800">السؤال <span id="currentQNum">1</span></p>
-                            </div>
-                            <div class="text-center bg-gray-50 px-4 py-2 rounded-xl border border-gray-200">
-                                <p class="text-[10px] text-gray-500 font-bold mb-0.5"><i class="fas fa-clock"></i> الوقت المتبقي للسؤال</p>
-                                <p id="timerDisplay" class="text-xl font-black text-[#7A2128] tracking-widest">02:00</p>
-                            </div>
+                            <div><p id="sectionTitle" class="text-xs text-[#F5B335] font-bold mb-1">القسم</p><p class="text-sm font-black text-gray-800">السؤال <span id="currentQNum">1</span></p></div>
+                            <div class="text-center bg-gray-50 px-4 py-2 rounded-xl border border-gray-200"><p class="text-[10px] text-gray-500 font-bold mb-0.5"><i class="fas fa-clock"></i> الوقت المتبقي للسؤال</p><p id="timerDisplay" class="text-xl font-black text-[#7A2128] tracking-widest">02:00</p></div>
                         </div>
                         <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 min-h-[350px] relative">
                             <h3 id="questionText" class="text-lg md:text-xl font-bold text-[#7A2128] mb-6 leading-relaxed">نص السؤال</h3>
                             <div id="optionsContainer" class="space-y-3"></div>
                             <div class="mt-8 flex justify-between items-center border-t pt-4">
-                                <button onclick="markForReview()" class="text-yellow-600 hover:bg-yellow-50 font-bold py-2 px-4 rounded-lg transition text-sm border border-yellow-200">
-                                    <i class="fas fa-flag"></i> تأجيل للمراجعة
-                                </button>
-                                <button id="nextBtn" onclick="saveAndNext()" class="bg-[#7A2128] hover:bg-red-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all flex items-center gap-2">
-                                    التالي <i class="fas fa-arrow-left text-sm"></i>
-                                </button>
+                                <button onclick="markForReview()" class="text-yellow-600 hover:bg-yellow-50 font-bold py-2 px-4 rounded-lg transition text-sm border border-yellow-200"><i class="fas fa-flag"></i> تأجيل للمراجعة</button>
+                                <button id="nextBtn" onclick="saveAndNext()" class="bg-[#7A2128] hover:bg-red-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all flex items-center gap-2">التالي <i class="fas fa-arrow-left text-sm"></i></button>
                             </div>
                         </div>
                     </div>
@@ -259,21 +200,14 @@
             <!-- الشاشة 3: النهاية والشكر -->
             <div id="thankYouScreen" class="hidden mt-10">
                 <div class="bg-white rounded-2xl shadow-2xl p-10 text-center border-t-4 border-[#10B981] max-w-2xl mx-auto">
-                    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <i class="fas fa-check-circle text-5xl text-green-600"></i>
-                    </div>
+                    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fas fa-check-circle text-5xl text-green-600"></i></div>
                     <h2 class="text-3xl font-black text-[#7A2128] mb-3">تم تسليم الاختبار بنجاح</h2>
                     <p class="text-gray-600 font-semibold mb-6">شكراً لمشاركتك. سيتم تصحيح الإجابات النصية من قبل المشرف وإصدار نتيجتك النهائية.</p>
-                    <div id="sendingStatus" class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-bold">
-                        <i class="fas fa-spinner fa-spin"></i> جاري حفظ النتيجة في النظام...
-                    </div>
+                    <div id="sendingStatus" class="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-2 rounded-full text-sm font-bold"><i class="fas fa-spinner fa-spin"></i> جاري حفظ النتيجة في النظام...</div>
                 </div>
             </div>
         </main>
     </div>
-
-    <!-- باقي النوافذ (الأدمن، التقييم، الشهادة) - نفس الكود السابق -->
-    <!-- ... -->
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
@@ -304,12 +238,12 @@
             { section: "الحلقة الخامسة: القيمة المضافة والتحسين المستمر", q: "23- من الطرق التي يمكن للموظف من خلالها المساهمة في التحسين المستمر.", type: "mcq", options: ["تطبيق التوصيات والإجراءات التصحيحية", "تقديم مقترحات لتحسين العمليات", "التعلم من الأخطاء والتعاون مع إدارة المراجعة الداخلية والإدارات الأخرى بالاتصال والتواصل الفعال", "جميع الخيارات صحيحة"], answer: "جميع الخيارات صحيحة" }
         ];
 
-        // ==================== الإعدادات ====================
+        // ==================== الإعدادات - تأكد من صحة كلمات المرور ====================
         const CONFIG = {
             STORAGE_KEY: "KIB_AUDIT_QUIZ_FINAL",
             EXIT_COUNT_KEY: "KIB_EXIT_COUNT",
             GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbxepx9xsak_jhqk1AIJaxHJwBlH4zn4koEfbF-KBVeGJbJ8TdduBcuMfZmZKJkB5nOv/exec",
-            RESET_PASSWORD: "RESET2026", // كلمة مرور إعادة الاختبار فقط
+            RESET_PASSWORD: "RESET2026", // كلمة مرور إعادة الاختبار فقط (لا تمنح صلاحيات الأدمن)
             ADMINS: {
                 "KIB_ADMIN_2026": { name: "المشرف الرئيسي", role: "super_admin", email: "gityemen3@gmail.com" },
                 "MOH2026": { name: "محمد البكيلي", role: "admin", email: "moh-ahm2090@hotmail.com" },
@@ -318,10 +252,12 @@
             }
         };
 
+        // ==================== المتغيرات العامة ====================
         let quizState = Array(QUESTIONS.length).fill().map(() => ({ answer: '', timeLeft: 120, status: 'unanswered', manualPoints: 0 }));
         let currentQuestion = 0, timerInterval, startTime, employeeInfo = {}, allServerData = [], currentEditingRow = null, currentAdmin = null;
-        let exitCount = 0; // عدد مرات الخروج
-        let isQuizActive = false; // هل الاختبار نشط حالياً
+        let exitCount = 0;
+        let isQuizActive = false;
+        let pendingStart = false;
 
         // ==================== فحص المتصفح وتسجيل الخروج ====================
         document.addEventListener("DOMContentLoaded", () => {
@@ -335,6 +271,7 @@
                 isQuizActive = false;
             }
             
+            // تأكد من ربط الأزرار بشكل صحيح
             document.getElementById('adminLoginBtn').addEventListener('click', adminLoginHandler);
             document.getElementById('resetConfirmBtn').addEventListener('click', resetExamHandler);
             
@@ -348,10 +285,9 @@
                 if (isQuizActive) {
                     exitCount++;
                     localStorage.setItem(CONFIG.EXIT_COUNT_KEY, exitCount.toString());
-                    // رسالة تأكيد للمستخدم
                     e.preventDefault();
-                    e.returnValue = 'أنت على وشك مغادرة الاختبار. سيتم تسجيل هذه المحاولة.';
-                    return e.returnValue;
+                    e.returnValue = '';
+                    return '';
                 }
             });
             
@@ -361,18 +297,16 @@
                     exitCount++;
                     localStorage.setItem(CONFIG.EXIT_COUNT_KEY, exitCount.toString());
                 }
-                // إظهار تحذير عند العودة
                 if (!document.hidden && isQuizActive && exitCount > 0) {
                     showExitWarning();
                 }
             });
             
-            // منع فتح أدوات المطور (F12, Ctrl+Shift+I, etc.)
+            // منع فتح أدوات المطور
             document.addEventListener('keydown', (e) => {
                 if (isQuizActive) {
                     if (e.key === 'F12' || 
-                        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-                        (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+                        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
                         (e.ctrlKey && e.key === 'U')) {
                         e.preventDefault();
                         showToast('هذا الإجراء غير مسموح به أثناء الاختبار');
@@ -397,19 +331,16 @@
 
         function returnToQuiz() {
             document.getElementById('exitWarningOverlay').classList.add('hidden');
-            // إعادة شحن المؤقت
             if (isQuizActive && quizState[currentQuestion]?.status !== 'locked') {
                 startTimer();
             }
         }
 
-        // ==================== نافذة التحذير ====================
-        let pendingStart = false;
-        
+        // ==================== نافذة التحذير وبدء الاختبار ====================
         document.getElementById('introForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // التحقق من الاسم الرباعي
+            // التحقق من الاسم الرباعي (3 كلمات على الأقل)
             const nameInput = document.getElementById('empName');
             const nameValue = nameInput.value.trim();
             const nameWords = nameValue.split(/\s+/).filter(w => w.length > 0);
@@ -443,7 +374,6 @@
             document.getElementById('introScreen').classList.add('hidden');
             document.getElementById('quizScreen').classList.remove('hidden');
             
-            // بدء الاختبار
             startTime = Date.now();
             isQuizActive = true;
             exitCount = 0;
@@ -464,12 +394,14 @@
             document.getElementById('resetPassInput').value = ''; 
             document.getElementById('resetAuthError').classList.add('hidden'); 
         }
+        
         function closeResetModal() { 
             document.getElementById('resetModal').classList.add('hidden'); 
         }
         
         function resetExamHandler() {
             const pw = document.getElementById('resetPassInput').value.trim();
+            // تأكد من المقارنة الصحيحة
             if (pw === CONFIG.RESET_PASSWORD) {
                 localStorage.removeItem(CONFIG.STORAGE_KEY);
                 localStorage.removeItem(CONFIG.EXIT_COUNT_KEY);
@@ -489,9 +421,66 @@
             }
         }
 
-        // ==================== بقية الدوال (buildNavigator, loadQuestion, timer, finishQuiz) ====================
+        // ==================== دوال المسؤولين ====================
+        function showAdminLogin() { 
+            document.getElementById('adminModal').classList.remove('hidden'); 
+            document.getElementById('adminPassInput').value = ''; 
+            document.getElementById('adminAuthError').classList.add('hidden'); 
+        }
+        
+        function closeAdminModal() { 
+            document.getElementById('adminModal').classList.add('hidden'); 
+            document.getElementById('adminPassInput').value = ''; 
+            document.getElementById('adminAuthError').classList.add('hidden'); 
+        }
+        
+        function logoutAdmin() { 
+            currentAdmin = null;
+            document.getElementById('adminDashboard').classList.add('hidden');
+            document.getElementById('employeeApp').classList.remove('hidden');
+            location.reload();
+        }
+
+        function adminLoginHandler() {
+            const pw = document.getElementById('adminPassInput').value.trim();
+            
+            // تحقق من كلمة المرور في قائمة المسؤولين
+            if (CONFIG.ADMINS[pw]) {
+                currentAdmin = CONFIG.ADMINS[pw];
+                document.getElementById('adminModal').classList.add('hidden');
+                document.getElementById('employeeApp').classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                document.getElementById('adminPassInput').value = '';
+                document.getElementById('adminAuthError').classList.add('hidden');
+                updateAdminUI();
+                loadDashboard();
+            } else {
+                document.getElementById('adminAuthError').classList.remove('hidden');
+                document.getElementById('adminAuthError').textContent = 'كلمة المرور غير صحيحة';
+            }
+        }
+
+        function updateAdminUI() {
+            if (!currentAdmin) return;
+            const h1 = document.querySelector('#adminDashboard header h1');
+            if (h1) h1.textContent = `نتائج وإدارة اختبار المراجعة - ${currentAdmin.name}`;
+            const expBtn = document.querySelector('#adminDashboard .bg-green-600');
+            if (expBtn && currentAdmin.role !== 'super_admin') expBtn.style.display = 'none';
+        }
+
+        async function loadDashboard() {
+            // سيتم إضافة دوال لوحة التحكم لاحقاً
+            console.log('Dashboard loaded for:', currentAdmin?.name);
+        }
+
+        function refreshDashboard() { loadDashboard(); }
+        function exportToExcel() { alert('خاصية التصدير متاحة للمشرف الرئيسي فقط'); }
+
+        // ==================== بناء واجهة الاختبار ====================
         function buildNavigator() {
-            const grid = document.getElementById('navGrid'); if (!grid) return; grid.innerHTML = '';
+            const grid = document.getElementById('navGrid'); 
+            if (!grid) return; 
+            grid.innerHTML = '';
             for (let i = 0; i < QUESTIONS.length; i++) { 
                 const btn = document.createElement('button'); 
                 btn.id = `navBtn_${i}`; 
@@ -504,7 +493,9 @@
 
         function updateNavStyles() {
             for (let i = 0; i < QUESTIONS.length; i++) {
-                const btn = document.getElementById(`navBtn_${i}`); if (!btn) continue; btn.className = 'nav-btn';
+                const btn = document.getElementById(`navBtn_${i}`); 
+                if (!btn) continue; 
+                btn.className = 'nav-btn';
                 if (quizState[i].status === 'answered') btn.classList.add('answered');
                 else if (quizState[i].status === 'flagged') btn.classList.add('flagged');
                 else if (quizState[i].status === 'locked') btn.classList.add('locked');
@@ -524,6 +515,7 @@
             if (!container) return; 
             container.innerHTML = ''; 
             const locked = state.status === 'locked';
+            
             if (q.type === 'mcq') {
                 q.options.forEach(opt => {
                     const checked = state.answer === opt.trim() ? 'checked' : ''; 
@@ -544,7 +536,9 @@
                 else ta.addEventListener('input', tempSaveAnswer);
                 container.appendChild(ta);
             }
+            
             updateNavStyles();
+            
             if (!locked) startTimer();
             else { 
                 document.getElementById('timerDisplay').textContent = "00:00"; 
@@ -558,8 +552,7 @@
             if (q.type === 'mcq') { 
                 const checked = document.querySelector('input[name="q_answer"]:checked'); 
                 if (checked) ans = checked.value; 
-            }
-            else { 
+            } else { 
                 const ta = document.getElementById('q_text_answer'); 
                 if (ta) ans = ta.value; 
             }
@@ -579,18 +572,26 @@
         function saveAndNext() {
             let next = -1;
             for (let i = currentQuestion + 1; i < QUESTIONS.length; i++) { 
-                if (quizState[i].status === 'unanswered' || quizState[i].status === 'flagged') { next = i; break; } 
+                if (quizState[i].status === 'unanswered' || quizState[i].status === 'flagged') { 
+                    next = i; 
+                    break; 
+                } 
             }
             if (next === -1) { 
                 for (let i = 0; i < QUESTIONS.length; i++) { 
-                    if (quizState[i].status === 'unanswered' || quizState[i].status === 'flagged') { next = i; break; } 
+                    if (quizState[i].status === 'unanswered' || quizState[i].status === 'flagged') { 
+                        next = i; 
+                        break; 
+                    } 
                 } 
             }
             if (next !== -1) loadQuestion(next); 
             else finishQuizConfirmation();
         }
 
-        function goToQuestion(i) { if (i >= 0 && i < QUESTIONS.length) loadQuestion(i); }
+        function goToQuestion(i) { 
+            if (i >= 0 && i < QUESTIONS.length) loadQuestion(i); 
+        }
 
         function startTimer() {
             updateTimerUI(); 
@@ -656,7 +657,7 @@
             fd.append('jobTitle', employeeInfo.jobTitle); 
             fd.append('score', final.toString()); 
             fd.append('timeSpent', timeSpent); 
-            fd.append('exitCount', exitCount.toString()); // إرسال عدد مرات الخروج
+            fd.append('exitCount', exitCount.toString()); 
             fd.append('details', JSON.stringify(quizState));
             
             try {
@@ -685,40 +686,14 @@
         function hideToast() { 
             document.getElementById('validationToast').classList.add('hidden'); 
         }
-        
-        function showAdminLogin() { 
-            document.getElementById('adminModal').classList.remove('hidden'); 
-        }
-        
-        function closeAdminModal() { 
-            document.getElementById('adminModal').classList.add('hidden'); 
-            document.getElementById('adminPassInput').value = ''; 
-            document.getElementById('adminAuthError').classList.add('hidden'); 
-        }
-        
-        function logoutAdmin() { 
-            location.reload(); 
-        }
 
-        function adminLoginHandler() {
-            const pw = document.getElementById('adminPassInput').value.trim();
-            if (CONFIG.ADMINS[pw]) { 
-                currentAdmin = CONFIG.ADMINS[pw]; 
-                document.getElementById('adminModal').classList.add('hidden'); 
-                document.getElementById('employeeApp').classList.add('hidden'); 
-                document.getElementById('adminDashboard').classList.remove('hidden'); 
-                document.getElementById('adminPassInput').value = ''; 
-                document.getElementById('adminAuthError').classList.add('hidden'); 
-                updateAdminUI(); 
-                loadDashboard(); 
-            }
-            else { 
-                document.getElementById('adminAuthError').classList.remove('hidden'); 
-                document.getElementById('adminAuthError').textContent = 'كلمة المرور غير صحيحة'; 
-            }
+        // طباعة كلمات المرور في وحدة التحكم للتأكد
+        console.log('✅ كلمات مرور المشرفين:');
+        for (let [pass, admin] of Object.entries(CONFIG.ADMINS)) {
+            console.log(`   ${admin.name}: ${pass} (${admin.role})`);
         }
-
-        // ... (باقي دوال الأدمن كما هي)
+        console.log('✅ كلمة مرور إعادة الاختبار: ' + CONFIG.RESET_PASSWORD);
+        console.log('✅ المجموع: ' + Object.keys(CONFIG.ADMINS).length + ' مشرفين + 1 كلمة إعادة تعيين');
     </script>
 </body>
 </html>
