@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الاستبيان مغلق - KIB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+        * { font-family: 'Cairo', sans-serif; }
+        body { background-color: #f3f4f6; }
+        .header-shadow { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body>
+
+    <!-- الترويسة العلوية (مطابقة للتصميم الأصلي) -->
+    <header class="bg-[#7A2128] text-white p-3 md:p-4 sticky top-0 z-40 header-shadow">
+        <div class="container mx-auto max-w-5xl flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-1.5 rounded-full shadow-sm flex-shrink-0">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTxIhDB302tFWezCQwkWsaUd6V0v0dKMpBIA&s" alt="KIB" class="h-8 w-8 md:h-10 md:w-10 object-contain rounded-full">
+                </div>
+                <div class="overflow-hidden">
+                    <h1 class="text-sm md:text-lg font-bold truncate">التقييم المعرفي - إدارة المراجعة الداخلية</h1>
+                    <p class="text-[10px] md:text-xs text-gray-200 truncate">بنك الكريمي الإسلامي</p>
+                </div>
+            </div>
+            <!-- أيقونة القفل للإشارة إلى الإغلاق -->
+            <div class="bg-white/10 rounded-full w-10 h-10 flex items-center justify-center border border-white/20">
+                <i class="fas fa-lock text-white text-lg opacity-90"></i>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="container mx-auto max-w-3xl p-4 mt-10">
+        <div class="bg-white rounded-2xl shadow-xl p-8 md:p-12 text-center border-t-4 border-[#F5B335] transition-all hover:shadow-2xl">
+            <!-- أيقونة الإغلاق -->
+            <div class="flex justify-center mb-6">
+                <div class="w-28 h-28 bg-red-50 rounded-full flex items-center justify-center border-4 border-[#7A2128] border-opacity-20">
+                    <i class="fas fa-times-circle text-6xl text-[#7A2128]"></i>
+                </div>
+            </div>
+
+            <h2 class="text-3xl md:text-4xl font-black text-[#7A2128] mb-4">تم إغلاق الاستبيان</h2>
+            <p class="text-xl text-gray-700 font-semibold mb-6">نشكر جميع المشاركين على تعاونهم واهتمامهم.</p>
+
+            <!-- بطاقة توضيحية -->
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-6 text-right max-w-lg mx-auto">
+                <div class="flex items-start gap-3">
+                    <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                    
+                </div>
+            </div>
+
+            <!-- تذييل داخلي -->
+            <div class="mt-8 text-gray-400 text-xs border-t border-gray-100 pt-4">
+                <i class="fas fa-building ml-1"></i> بنك الكريمي الإسلامي - إدارة المراجعة الداخلية
+                <span class="mx-2">|</span>
+                <i class="fas fa-envelope ml-1"></i> internal.audit@kib.com
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // إدراج تاريخ اليوم بشكل تلقائي
+        document.addEventListener('DOMContentLoaded', function() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('closeDate').textContent = now.toLocaleDateString('ar-SA', options);
+        });
+    </script>
+
+</body>
+</html>
