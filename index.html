@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- مكتبة تحويل الشهادة إلى صورة للتحميل التلقائي (أفضل دعم للعربية من html2canvas) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
     <style>
         * { font-family: 'Cairo', sans-serif; }
         body { background-color: #f3f4f6; }
@@ -308,7 +310,7 @@
         </div>
 
         <!-- حاوية الشهادة A4 Landscape -->
-        <div class="cert-container flex flex-col justify-between">
+        <div class="cert-container flex flex-col justify-between" id="certificateNode">
             
             <!-- الأمواج الجانبية المعدلة (ناعمة، فاتحة، انسيابية) -->
             <div class="cert-wave-1"></div>
@@ -349,16 +351,16 @@
                     <h2 id="finalCertName" class="text-3xl md:text-4xl font-black text-[#1a202c]">الاسم يظهر هنا</h2>
                 </div>
 
-                <!-- النص المشقوق (عربي في اليمين، إنجليزي في اليسار) -->
-                <div class="flex flex-row justify-between items-start w-full max-w-[85%] mx-auto gap-8 mb-10 text-gray-600 font-semibold text-[15px] md:text-lg">
-                    <!-- النص العربي (في الجهة اليمنى) -->
-                    <div class="w-1/2 text-right self-start" dir="rtl" style="line-height:1.9; margin:0;">
-                        قد أتم بنجاح البرنامج التدريبي: التميز في خدمة العملاء<br>والذي تم تنظيمه بواسطة البنك من 22 إلى 23 أغسطس 2026.
-                    </div>
-                    <!-- النص الإنجليزي (في الجهة اليسرى) -->
-                    <div class="w-1/2 text-left self-start" dir="ltr" style="line-height:1.9; margin:0;">
-                        has successfully completed the training program: "Customer Service Excellence"<br>organized by KIB from 22 to 23 August 2026.
-                    </div>
+                <!-- النص التفصيلي: فقرة عربية متمركزة، ثم فقرة إنجليزية أصغر تحتها -->
+                <div class="w-full max-w-[85%] mx-auto mb-8 text-gray-700 font-bold text-[15px] md:text-lg text-center" style="line-height:1.9;">
+                    <p dir="rtl" class="mb-2">
+                        قد أتم بنجاح البرنامج التدريبي: <span class="text-[#7a1a2b]">"التميز في خدمة العملاء"</span><br>
+                        والذي تم تنظيمه بواسطة البنك من <span style="white-space:nowrap;">22 إلى 23 أغسطس 2026.</span>
+                    </p>
+                    <p dir="ltr" class="mb-0 text-sm md:text-base text-gray-600">
+                        Has successfully completed the training program: <span class="text-[#7a1a2b]">"Customer Service Excellence"</span><br>
+                        organized by KIB from <span style="white-space:nowrap;">22 to 23 August 2026.</span>
+                    </p>
                 </div>
 
                 <!-- التمنيات (عنابي، في المنتصف) + تاريخ الإصدار -->
@@ -716,7 +718,7 @@
             const passed = final >= PASSING_SCORE;
 
             if (passed) {
-                showCertificateScreen(employeeInfo.name);
+                showCertificateScreen(employeeInfo.name, true);
             } else {
                 showFailScreen(final);
             }
@@ -767,7 +769,7 @@
             }
         }
 
-        function showCertificateScreen(name) {
+        function showCertificateScreen(name, autoDownload) {
             document.getElementById('employeeApp').classList.add('hidden');
             document.getElementById('failScreen')?.classList.add('hidden');
             document.getElementById('certificateScreen').classList.remove('hidden');
@@ -776,6 +778,50 @@
             const dateEl = document.getElementById('certIssueDate');
             if (dateEl) dateEl.textContent = issueDate;
             if (!sealDrawn) drawOfficialSeal();
+            if (autoDownload) downloadCertificateImage(name);
+        }
+
+        // تحميل تلقائي لصورة الشهادة بجودة عالية بمجرد ظهورها بعد النجاح
+        let certDownloaded = false;
+        function downloadCertificateImage(name) {
+            if (certDownloaded) return;
+            if (typeof htmlToImage === 'undefined') return;
+            const node = document.getElementById('certificateNode');
+            if (!node) return;
+            const run = () => {
+                setTimeout(() => {
+                    htmlToImage.toPng(node, {
+                        pixelRatio: 2,
+                        backgroundColor: '#ffffff',
+                        width: 1122,
+                        height: 793,
+                        style: {
+                            transform: 'scale(1)',
+                            transformOrigin: 'top left',
+                            width: '1122px',
+                            height: '793px',
+                            maxWidth: 'none',
+                            margin: '0'
+                        }
+                    }).then(dataUrl => {
+                        certDownloaded = true;
+                        const safeName = (name || 'شهادة').toString().replace(/[\\/:*?"<>|]+/g, '_').trim() || 'شهادة';
+                        const link = document.createElement('a');
+                        link.download = `شهادة_${safeName}.png`;
+                        link.href = dataUrl;
+                        document.body.appendChild(link);
+                        link.click();
+                        link.remove();
+                    }).catch(err => {
+                        console.error('تعذر إنشاء صورة الشهادة تلقائياً', err);
+                    });
+                }, 1200); // مهلة قصيرة لضمان انتهاء رسم الختم والخطوط قبل الالتقاط
+            };
+            if (document.fonts && document.fonts.ready) {
+                document.fonts.ready.then(run).catch(run);
+            } else {
+                run();
+            }
         }
 
         function showFailScreen(score) {
