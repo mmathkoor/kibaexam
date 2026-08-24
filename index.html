@@ -244,7 +244,7 @@
             </div>
             
             <div class="space-y-3">
-                <button onclick="location.reload()" class="w-full bg-[#7A2128] hover:bg-red-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition"><i class="fas fa-home ml-2"></i> العودة للصفحة الرئيسية</button>
+                <p class="text-gray-500 font-bold text-sm mt-4">يمكنك الآن إغلاق هذه الصفحة.</p>
             </div>
         </div>
     </div>
@@ -261,7 +261,6 @@
             
             <div class="space-y-3">
                 <button onclick="showResetModal()" class="w-full bg-[#F5B335] hover:bg-yellow-500 text-white font-bold py-3 px-8 rounded-xl shadow-md transition"><i class="fas fa-undo ml-2"></i> إعادة الاختبار (بصلاحية المشرف)</button>
-                <button onclick="location.reload()" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-8 rounded-xl shadow-md transition"><i class="fas fa-home ml-2"></i> العودة للصفحة الرئيسية</button>
             </div>
         </div>
     </div>
@@ -443,12 +442,14 @@
                 }
                 if (!document.hidden && isQuizActive && exitCount > 0) showExitWarning();
             });
+            
+            // منع فتح فحص العنصر (F12) والنقر الأيمن في جميع مراحل التطبيق
             document.addEventListener('keydown', (e) => {
-                if (isQuizActive && (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && e.key === 'U'))) {
-                    e.preventDefault(); showToast('هذا الإجراء غير مسموح به أثناء الاختبار'); return false;
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && e.key === 'U')) {
+                    e.preventDefault(); showToast('هذا الإجراء غير مسموح به إطلاقاً.'); return false;
                 }
             });
-            document.addEventListener('contextmenu', (e) => { if (isQuizActive) { e.preventDefault(); return false; } });
+            document.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
         }
 
         function showExitWarning() {
