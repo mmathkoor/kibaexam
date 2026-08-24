@@ -184,7 +184,7 @@
                 <form id="introForm" class="space-y-5">
                     <div>
                         <label class="block text-sm font-bold mb-2 text-gray-700">اسم الموظف كما سيظهر بالشهادة (رباعي) *</label>
-                        <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition" placeholder="مثال: محمد أحمد البكيلي">
+                        <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition" placeholder="مثال: محمد احمد محمد">
                         <p id="empNameError" class="text-red-500 text-xs mt-1 hidden">يجب إدخال الاسم الرباعي (3 كلمات على الأقل)</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -399,11 +399,14 @@
 
         const PASSING_SCORE = 60;
         const CONFIG = {
-            STORAGE_KEY: "KIB_CS_QUIZ_CERT_FINAL",
-            EXIT_COUNT_KEY: "KIB_CS_EXIT_CERT",
+            STORAGE_KEY: "KIB_CS_QUIZ_CERT_FINAL_V2", // تم تغيير الاسم هنا لبدء نسخة جديدة
+            EXIT_COUNT_KEY: "KIB_CS_EXIT_CERT_V2",    // تم تغيير الاسم هنا
             GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyBbntq3yjreBRmS-PHK6ATRfuIzqAuYIuEPGWSGGQ6p2nSFhYGJZwgQn1OW5pCNPVx7g/exec", 
             RESET_PASSWORD: "KIB2026",
             ADMINS: {
+                "KIB_ADMIN_2026": { name: "المشرف الرئيسي", role: "super_admin", email: "Shaimaotp@outlook.com" },
+                "moh-ahm2090": { name: "محمد البكيلي", role: "admin", email: "moh-ahm2090@hotmail.com" }
+            }
                 "KIB_ADMIN_2026": { name: "المشرف الرئيسي", role: "super_admin", email: "Shaimaotp@outlook.com" },
                 "moh-ahm2090": { name: "محمد البكيلي", role: "admin", email: "moh-ahm2090@hotmail.com" }
             }
