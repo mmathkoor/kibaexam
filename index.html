@@ -176,7 +176,7 @@
                 <div class="bg-blue-50 text-blue-800 p-4 rounded-xl border border-blue-100 mb-8 text-sm font-semibold leading-relaxed">
                     <ul class="list-disc list-inside pr-4 space-y-1">
                         <li>يتكون هذا التقييم من 15 سؤالاً شاملاً لمحاور الورشة.</li>
-                        <li><strong>سيتم التحقق من اجتيازك للاختبار وإصدار شهادتك لاحقاً.</strong></li>
+                        <li><strong>سيتم تصحيح الإجابات وتسجيل النتيجة ليقوم المشرف بإصدار شهادتك لاحقاً.</strong></li>
                         <li><strong>كل سؤال له عداد زمني مستقل (دقيقتين).</strong></li>
                         <li>يمكنك <strong>"تأجيل السؤال"</strong> للعودة إليه لاحقاً قبل انتهاء وقته.</li>
                     </ul>
@@ -184,7 +184,7 @@
                 <form id="introForm" class="space-y-5">
                     <div>
                         <label class="block text-sm font-bold mb-2 text-gray-700">اسم الموظف كما سيظهر بالشهادة (رباعي) *</label>
-                        <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition" placeholder="مثال: محمد احمد محمد">
+                        <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition" placeholder="مثال: محمد أحمد البكيلي">
                         <p id="empNameError" class="text-red-500 text-xs mt-1 hidden">يجب إدخال الاسم الرباعي (3 كلمات على الأقل)</p>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -404,9 +404,6 @@
             GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyBbntq3yjreBRmS-PHK6ATRfuIzqAuYIuEPGWSGGQ6p2nSFhYGJZwgQn1OW5pCNPVx7g/exec", 
             RESET_PASSWORD: "KIB2026",
             ADMINS: {
-                "KIB_ADMIN_2026": { name: "المشرف الرئيسي", role: "super_admin", email: "Shaimaotp@outlook.com" },
-                "moh-ahm2090": { name: "محمد البكيلي", role: "admin", email: "moh-ahm2090@hotmail.com" }
-            }
                 "KIB_ADMIN_2026": { name: "المشرف الرئيسي", role: "super_admin", email: "Shaimaotp@outlook.com" },
                 "moh-ahm2090": { name: "محمد البكيلي", role: "admin", email: "moh-ahm2090@hotmail.com" }
             }
