@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>التقييم المعرفي والشهادة - إدارة الامتثال | KIB</title>
+    <title>التقييم المعرفي - إدارة الامتثال | KIB</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * { font-family: 'Cairo', sans-serif; }
         body { background-color: #f3f4f6; }
@@ -29,10 +30,10 @@
         ::-webkit-scrollbar-thumb { background: #0369a1; border-radius: 10px; }
         .toast-enter { animation: slideInDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
         @keyframes slideInDown { from { transform: translate(-50%, -100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+        
         .exit-warning-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 105, 161, 0.95); z-index: 99999; display: flex; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
         .exit-warning-overlay.hidden { display: none; }
 
-        /* طبقة التحقق من البيانات (Loading) لمنع التكرار */
         .verify-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .verify-overlay.hidden { display: none !important; }
 
@@ -47,14 +48,12 @@
 </head>
 <body>
 
-    <!-- طبقة جاري التحقق من البيانات لمنع التكرار من السيرفر -->
     <div id="verifyOverlay" class="verify-overlay hidden no-print">
         <i class="fas fa-circle-notch fa-spin text-6xl text-[#0369a1] mb-6"></i>
         <h2 class="text-2xl font-black text-gray-800 mb-2">جاري التحقق من السجلات...</h2>
         <p class="text-base text-gray-500 font-semibold">يرجى الانتظار للتأكد من عدم وجود اختبار سابق باسمك أو رقمك الوظيفي</p>
     </div>
 
-    <!-- طبقة تحذير الخروج -->
     <div id="exitWarningOverlay" class="exit-warning-overlay hidden">
         <div>
             <i class="fas fa-exclamation-triangle text-6xl mb-4" style="color: #F5B335;"></i>
@@ -68,7 +67,6 @@
         </div>
     </div>
 
-    <!-- الترويسة العلوية -->
     <header class="bg-[#0369a1] text-white p-3 md:p-4 sticky top-0 z-40 shadow-lg no-print">
         <div class="container mx-auto max-w-5xl flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -81,6 +79,9 @@
                 </div>
             </div>
             <div class="flex gap-2">
+                <button onclick="showResetModal()" class="flex-shrink-0 bg-white/10 hover:bg-white/20 text-white rounded-xl w-10 h-10 flex items-center justify-center transition shadow-sm border border-white/20" title="إعادة الاختبار">
+                    <i class="fas fa-undo text-lg opacity-90"></i>
+                </button>
                 <button onclick="showAdminLogin()" class="flex-shrink-0 bg-white/10 hover:bg-white/20 text-white rounded-xl w-10 h-10 flex items-center justify-center transition shadow-sm border border-white/20" title="لوحة المشرف">
                     <i class="fas fa-cog text-lg opacity-90"></i>
                 </button>
@@ -88,7 +89,6 @@
         </div>
     </header>
 
-    <!-- رسائل التنبيه العائمة -->
     <div id="validationToast" class="fixed top-5 md:top-20 left-1/2 z-50 hidden toast-enter w-[90%] max-w-sm no-print" style="transform: translateX(-50%);">
         <div class="bg-white border-r-4 border-red-500 rounded-lg shadow-2xl p-4 flex items-center gap-3">
             <i class="fas fa-exclamation-circle text-red-500 text-2xl"></i>
@@ -97,19 +97,19 @@
         </div>
     </div>
 
-    <!-- نافذة إعادة التعيين (بكلمة مرور للمشرف فقط) -->
+    <!-- نافذة إعادة التعيين -->
     <div id="resetModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden no-print">
         <div class="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl border-t-4 border-orange-500">
             <h3 class="text-xl font-bold text-orange-600 mb-4 text-center">إعادة تعيين الاختبار</h3>
-            <p class="text-sm text-gray-600 mb-4 text-center">للمشرفين: أدخل كلمة المرور للسماح بإعادة الاختبار.</p>
+            <p class="text-sm text-gray-600 mb-4 text-center">للمشرفين: أدخل كلمة المرور للسماح للموظف بإعادة الاختبار لتجاوز حظر السيرفر.</p>
             <input type="password" id="resetPassInput" class="w-full px-4 py-3 border-2 rounded-xl text-center text-lg mb-3 focus:outline-none focus:border-orange-500" placeholder="كلمة المرور">
-            <button id="resetConfirmBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl mb-2 transition">تأكيد إعادة الاختبار</button>
+            <button id="resetConfirmBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl mb-2 transition">تأكيد السماح بالإعادة</button>
             <button onclick="closeResetModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-xl transition">إلغاء</button>
             <div id="resetAuthError" class="text-red-600 text-xs text-center font-bold mt-2 hidden">كلمة المرور غير صحيحة</div>
         </div>
     </div>
 
-    <!-- نافذة المشرف -->
+    <!-- نافذة دخول المشرف -->
     <div id="adminModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden no-print">
         <div class="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl border-t-4 border-[#0369a1]">
             <h3 class="text-xl font-bold text-[#0369a1] mb-4 text-center">لوحة المشرف - الامتثال</h3>
@@ -120,7 +120,23 @@
         </div>
     </div>
 
-    <!-- نافذة التحذير قبل بدء الاختبار -->
+    <!-- نافذة المشاهدة للتفاصيل -->
+    <div id="viewModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60] hidden no-print">
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <h3 class="font-bold text-[#0369a1] text-lg">تفاصيل إجابات الموظف: <span id="viewEmpName" class="text-gray-800 font-black"></span></h3>
+                <button onclick="closeViewModal()" class="text-gray-500 hover:text-red-500 transition"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-4" id="viewContent">
+                <!-- سيتم إدراج الإجابات هنا -->
+            </div>
+            <div class="p-4 border-t bg-gray-50 rounded-b-2xl text-left">
+                <button onclick="closeViewModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition">إغلاق المعاينة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة التحذير قبل البدء -->
     <div id="warningModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden no-print">
         <div class="bg-white w-full max-w-lg p-8 rounded-2xl shadow-2xl border-t-4 border-red-500">
             <div class="text-center mb-6">
@@ -131,7 +147,7 @@
                 <ul class="space-y-3 text-red-800 font-semibold">
                     <li class="flex items-start gap-2"><i class="fas fa-random text-red-500 mt-1"></i><span><strong>الأسئلة (25 سؤال) تظهر بشكل عشوائي</strong> وتختلف من موظف لآخر.</span></li>
                     <li class="flex items-start gap-2"><i class="fas fa-eye text-red-500 mt-1"></i><span><strong>يتم تسجيل عدد مرات الخروج من المتصفح</strong>.</span></li>
-                    <li class="flex items-start gap-2"><i class="fas fa-ban text-red-500 mt-1"></i><span><strong>الاختبار لمرة واحدة فقط</strong>، ولا يمكن إعادة الدخول بنفس البيانات أو من متصفح آخر.</span></li>
+                    <li class="flex items-start gap-2"><i class="fas fa-ban text-red-500 mt-1"></i><span><strong>الاختبار لمرة واحدة فقط</strong>، ولا يمكن إعادة الدخول بنفس البيانات.</span></li>
                     <li class="flex items-start gap-2"><i class="fas fa-stopwatch text-red-500 mt-1"></i><span><strong>كل سؤال له دقيقتين فقط</strong>، وبعدها يقفل تلقائياً.</span></li>
                 </ul>
             </div>
@@ -142,11 +158,9 @@
         </div>
     </div>
 
-    <!-- ==================== التطبيق الرئيسي للموظف ==================== -->
     <div id="employeeApp" class="block no-print">
         <main class="container mx-auto max-w-5xl p-3 md:p-4 mt-2">
             
-            <!-- الشاشة 1: البيانات الافتتاحية -->
             <div id="introScreen" class="bg-white rounded-2xl shadow-xl p-6 md:p-10 border-t-4 border-[#F5B335] max-w-3xl mx-auto">
                 <div class="flex justify-center mb-6">
                     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTxIhDB302tFWezCQwkWsaUd6V0v0dKMpBIA&s" alt="KIB Logo" class="h-24 object-contain drop-shadow-md bg-white p-2 rounded-xl border border-gray-100">
@@ -157,7 +171,7 @@
                         <li>يتكون هذا التقييم من <strong>25 سؤالاً</strong> تظهر بشكل عشوائي متفاوت الصعوبة.</li>
                         <li><strong>سيتم تصحيح الإجابات وتسجيل النتيجة ليقوم المشرف بإصدار شهادتك لاحقاً.</strong></li>
                         <li>نسبة الاجتياز المطلوبة هي <strong>60%</strong>.</li>
-                        <li>لا يمكنك إعادة الاختبار بنفس الرقم الوظيفي إلا بإذن المشرف.</li>
+                        <li>لا يمكنك إعادة الاختبار بنفس الرقم الوظيفي إلا بتخويل من المشرف.</li>
                     </ul>
                 </div>
                 <form id="introForm" class="space-y-5">
@@ -180,7 +194,6 @@
                 </form>
             </div>
 
-            <!-- الشاشة 2: واجهة الاختبار -->
             <div id="quizScreen" class="hidden">
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
                     <div class="lg:col-span-1 bg-white rounded-2xl shadow-md p-4 border-t-4 border-[#F5B335] order-2 lg:order-1 h-fit">
@@ -214,7 +227,6 @@
         </main>
     </div>
 
-    <!-- ==================== شاشة النجاح للموظف ==================== -->
     <div id="successScreen" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-gray-100 p-4 no-print">
         <div class="bg-white max-w-lg w-full rounded-2xl shadow-2xl p-8 md:p-10 text-center border-t-4 border-[#10B981]">
             <i class="fas fa-check-circle text-[#10B981] text-6xl mb-5"></i>
@@ -224,17 +236,16 @@
             </p>
             <p class="text-gray-500 text-sm mb-6">نتيجتك: <span id="successScoreDisplay" class="font-black text-[#10B981] text-base">0%</span></p>
             
-            <div class="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-lg text-sm font-semibold mb-6">
-                سيقوم المشرف بمراجعة السجلات وإصدار شهادة المشاركة الخاصة بك قريباً.
+            <div class="bg-blue-50 border border-blue-200 text-blue-800 p-3 rounded-lg text-sm font-semibold mb-6 flex items-center justify-center gap-2" id="successStatusDisplay">
+                <i class="fas fa-spinner fa-spin"></i> جاري إرسال البيانات للسيرفر...
             </div>
             
-            <div class="space-y-3">
-                <p class="text-gray-500 font-bold text-sm mt-4">يمكنك الآن إغلاق هذه الصفحة بأمان.</p>
+            <div class="space-y-3 mt-4">
+                <p class="text-gray-500 font-bold text-sm">يمكنك الآن إغلاق هذه الصفحة بأمان.</p>
             </div>
         </div>
     </div>
 
-    <!-- ==================== شاشة الرسوب ==================== -->
     <div id="failScreen" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-gray-100 p-4 no-print">
         <div class="bg-white max-w-lg w-full rounded-2xl shadow-2xl p-8 md:p-10 text-center border-t-4 border-red-500">
             <i class="fas fa-circle-exclamation text-red-500 text-6xl mb-5"></i>
@@ -244,24 +255,27 @@
             </p>
             <p class="text-gray-500 text-sm mb-6">نتيجتك: <span id="failScoreDisplay" class="font-black text-red-500 text-base">0%</span></p>
             
-            <div class="space-y-3">
+            <div class="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm font-semibold mb-6 flex items-center justify-center gap-2" id="failStatusDisplay">
+                <i class="fas fa-spinner fa-spin"></i> جاري إرسال البيانات للسيرفر...
+            </div>
+
+            <div class="space-y-3 mt-4">
                 <button onclick="showResetModal()" class="w-full bg-[#F5B335] hover:bg-yellow-500 text-white font-bold py-3 px-8 rounded-xl shadow-md transition"><i class="fas fa-undo ml-2"></i> إعادة الاختبار (بصلاحية المشرف)</button>
             </div>
         </div>
     </div>
 
-    <!-- ==================== لوحة تحكم المشرف ==================== -->
     <div id="adminDashboard" class="hidden bg-gray-50 min-h-screen fixed inset-0 z-50 overflow-y-auto no-print">
         <header class="bg-[#0369a1] text-white p-3 sticky top-0 z-40 shadow-md">
             <div class="container mx-auto max-w-7xl flex justify-between items-center">
                 <div class="flex items-center gap-3">
                     <div class="bg-white p-1 rounded-full shadow-sm"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTxIhDB302tFWezCQwkWsaUd6V0v0dKMpBIA&s" alt="KIB" class="h-8 w-8 object-contain rounded-full"></div>
-                    <h1 id="adminHeaderTitle" class="text-sm md:text-base font-bold">إدارة التقييم والشهادات - الامتثال</h1>
+                    <h1 id="adminHeaderTitle" class="text-sm md:text-base font-bold">إدارة التقييم والنتائج - الامتثال</h1>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="exportToExcel()" id="exportBtn" class="bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded text-xs font-bold transition shadow-sm"><i class="fas fa-file-excel ml-1"></i> تصدير</button>
-                    <button onclick="refreshDashboard()" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-xs transition"><i class="fas fa-sync-alt"></i></button>
-                    <button onclick="logoutAdmin()" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-xs transition"><i class="fas fa-sign-out-alt"></i></button>
+                    <button onclick="exportToExcel()" id="exportBtn" class="bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded text-xs font-bold transition shadow-sm"><i class="fas fa-file-excel ml-1"></i> تصدير البيانات</button>
+                    <button onclick="refreshDashboard()" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-xs transition" title="تحديث البيانات"><i class="fas fa-sync-alt"></i></button>
+                    <button onclick="logoutAdmin()" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-xs transition" title="تسجيل الخروج"><i class="fas fa-sign-out-alt"></i></button>
                 </div>
             </div>
         </header>
@@ -284,10 +298,20 @@
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-right">
                         <thead class="bg-gray-50 text-gray-600 text-xs border-b" id="tableHeader">
-                            <tr><th class="p-3">التاريخ</th><th class="p-3">الرقم الوظيفي</th><th class="p-3">اسم الموظف</th><th class="p-3">الإدارة/الوظيفة</th><th class="p-3 text-center">الوقت المستغرق</th><th class="p-3 text-center">النتيجة %</th><th class="p-3 text-center">مخالفات</th><th class="p-3 text-center">الحالة</th></tr>
+                            <tr>
+                                <th class="p-3">التاريخ</th>
+                                <th class="p-3">الرقم الوظيفي</th>
+                                <th class="p-3">اسم الموظف</th>
+                                <th class="p-3">الإدارة/الوظيفة</th>
+                                <th class="p-3 text-center">الوقت المستغرق</th>
+                                <th class="p-3 text-center">النتيجة %</th>
+                                <th class="p-3 text-center">مخالفات</th>
+                                <th class="p-3 text-center">الحالة</th>
+                                <th class="p-3 text-center">الإجراءات</th>
+                            </tr>
                         </thead>
                         <tbody id="responsesTableBody" class="text-sm">
-                            <tr><td colspan="8" class="text-center p-8 font-bold text-gray-500">جاري تحميل البيانات...</td></tr>
+                            <tr><td colspan="9" class="text-center p-8 font-bold text-gray-500"><i class="fas fa-spinner fa-spin"></i> جاري تحميل البيانات...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -295,9 +319,8 @@
         </main>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
-        // ==================== بنك الأسئلة الشامل ====================
+        // بنك الأسئلة الشامل (63 سؤال) مقسم حسب الصعوبة
         const ALL_QUESTIONS = [
             /* ================= مستوى سهل ================= */
             { difficulty: "easy", section: "التقييم المعرفي", type: "mcq", q: "ما الغرض من إخفاء الأثر في غسل الأموال؟", options: ["زيادة عدد المعاملات", "قطع الصلة بين الجريمة والأموال الناتجة عنها", "زيادة سرعة التسوية", "تحسين جودة المستندات"], answer: "قطع الصلة بين الجريمة والأموال الناتجة عنها" },
@@ -328,7 +351,7 @@
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "ما العامل الأساسي الذي يركز عليه تمويل الإرهاب؟", options: ["حجم العملية فقط", "مصدر الأموال فقط", "المال والغرض من استخدامه والمستفيد النهائي", "نوع العملة المستخدمة فقط"], answer: "المال والغرض من استخدامه والمستفيد النهائي" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "لماذا زادت الضغوط على قاعدة الذهب أثناء الحرب العالمية الأولى؟", options: ["بسبب انخفاض الطلب على الذهب فقط", "بسبب حاجة الدول إلى تمويل الإنفاق العسكري وإصدار المزيد من النقود", "بسبب توقف الزراعة", "بسبب إلغاء البنوك"], answer: "بسبب حاجة الدول إلى تمويل الإنفاق العسكري وإصدار المزيد من النقود" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "لماذا قد يكون التعامل مع منطقة عالية المخاطر موضع اهتمام؟", options: ["لأنها دائمًا غير قانونية", "لأنها قد ترفع مستوى المخاطر عند غياب مبرر واضح للمعاملة", "لأنها تمنع التحويلات", "لأنها تؤدي دائمًا إلى رفض العملية"], answer: "لأنها قد ترفع مستوى المخاطر عند غياب مبرر واضح للمعاملة" },
-            { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "ما الذي يميز تمويل الإرهاب عن غسل الأموال من ناحية مصدر الأموال؟", options: ["أموال تمويل الإرهاب يجب أن تكون غير مشروعة دائمًا", "أموال تمويل الإرهاب قد تأتي من مصادر مشروعة أو غير مشروعة", "غسل الأموال فقط قد تأتي من مصدر مشروع", "لا يوجد اختلاف"], answer: "أموال تمويل الإرهاب قد تأتي من مصادر مشروعة أو غير مشروعة" },
+            { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "ما الذي يميز تمويل الإرهاب عن غسل الأموال من ناحية مصدر الأموال؟", options: ["أموال تمويل الإرهاب يجب أن تكون غير مشروعة دائمًا", "أموال تمويل الإرهاب قد تأتي من مصادر مشروعة أو غير مشروعة", "غسل الأموال فقط قد يأتي من مصدر مشروع", "لا يوجد اختلاف"], answer: "أموال تمويل الإرهاب قد تأتي من مصادر مشروعة أو غير مشروعة" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "لماذا ساعدت المعادن النفيسة على تطور النظام النقدي؟", options: ["لأنها غير قابلة للنقل", "لأنها قابلة للتقسيم والحفظ والنقل", "لأنها تصدر من البنوك فقط", "لأنها لا تخضع للتقييم"], answer: "لأنها قابلة للتقسيم والحفظ والنقل" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "لماذا قد يكون اكتشاف تمويل الإرهاب صعبًا؟", options: ["لأنه لا يحدث عبر النظام المالي", "لأن المعاملات قد تكون صغيرة ومن مصادر تبدو مشروعة وموزعة على عدة عمليات", "لأنه يقتصر على النقد", "لأنه لا يستخدم حسابات حقيقية"], answer: "لأن المعاملات قد تكون صغيرة ومن مصادر تبدو مشروعة وموزعة على عدة عمليات" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "أي من الحالات التالية تمثل رفع قيمة الفاتورة في غسل الأموال عبر التجارة الدولية TBML؟", options: ["تسجيل قيمة أقل من القيمة الحقيقية للبضاعة", "تسجيل قيمة أعلى من القيمة الحقيقية للبضاعة", "إلغاء الفاتورة", "تغيير البنك المراسل"], answer: "تسجيل قيمة أعلى من القيمة الحقيقية للبضاعة" },
@@ -402,7 +425,7 @@
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يقدم هدية لموظف البنك مباشرة قبل تنفيذ معاملة حساسة، دون وجود سبب مشروع لذلك. ما المؤشر هنا؟", options: ["محاولة التأثير على الموظف لتسهيل المعاملة", "مؤشر على انخفاض المخاطر", "إجراء اعتيادي من العميل", "مؤشر على ارتفاع السيولة"], answer: "محاولة التأثير على الموظف لتسهيل المعاملة" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يريد فتح حساب إلكتروني لكنه لا يقدم المعلومات المطلوبة لاستكمال التعرف عليه. ما المؤشر؟", options: ["صعوبة أو رفض استكمال متطلبات التعرف على العميل عن بُعد", "انخفاض المخاطر", "نشاط طبيعي", "مؤشر خاص بالتجارة"], answer: "صعوبة أو رفض استكمال متطلبات التعرف على العميل عن بُعد" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "شركة تجري معاملات دولية بشكل متكرر رغم عدم وجود مبرر تجاري واضح لطبيعة نشاطها. ما المؤشر الأبرز؟", options: ["استخدام حوالات دولية لا تتناسب مع نشاط الشركة", "مؤشر تضخم", "مؤشر متعلق بالعملة", "مؤشر يتعلق بقاعدة الذهب"], answer: "استخدام حوالات دولية لا تتناسب مع نشاط الشركة" },
-            { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يوزع إيداعات نقدية كبيرة عبر عدة فروع ويستخدم أشخاصًا مختلفين لإيداعها خلال فترة قصيرة، وكل مبلغ منفرد يبدو منخفضًا. ما الاستنتاج الأكثر دقة؟", options: ["العمليات مستقلة بالضرورة", "قد يكون ذلك تجزئة بهدف تجنب الرقابة", "هذا دليل على نشاط تجاري ناجح", "لا توجد مخاطرة لأن كل عملية صغيرة"], answer: "قد يكون ذلك تجزئة بهدف تجنب الرقابة" },
+            { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يوزع إيداعات نقدية كبيرة عبر عدة فروع ويستخدم أشخاصًا مختلفين لإيداعها خلال فترة قصيرة، وكل مبلغ منفرد يبدو منخفضًا. ما الاست الاستنتاج الأكثر دقة؟", options: ["العمليات مستقلة بالضرورة", "قد يكون ذلك تجزئة بهدف تجنب الرقابة", "هذا دليل على نشاط تجاري ناجح", "لا توجد مخاطرة لأن كل عملية صغيرة"], answer: "قد يكون ذلك تجزئة بهدف تجنب الرقابة" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "حساب منشئ محتوى حديث الإنشاء يستقبل هدايا رقمية ضخمة من عدة حسابات، ثم يسحب عوائد مرتفعة رغم عدم وجود متابعين أو تفاعل منطقي. ما مؤشر الاشتباه الأقوى؟", options: ["انخفاض الرسوم", "عدم تناسب العوائد مع مستوى التفاعل الحقيقي", "وجود حساب مصرفي", "استخدام الإنترنت"], answer: "عدم تناسب العوائد مع مستوى التفاعل الحقيقي" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يزعم أنه يقوم بمهمة أمنية سرية ويطلب إعفاءه من تقديم البيانات المطلوبة. كيف يصنف هذا السلوك؟", options: ["مؤشر متعلق بالهوية فقط", "مؤشر سلوكي يستوجب الانتباه", "مؤشر ائتماني", "مؤشر خاص بالتجارة"], answer: "مؤشر سلوكي يستوجب الانتباه" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يطلب تحويل الأموال إلى الخارج، ثم يطلب إصدار شيكات بقيمة الحوالة وإرسالها بالبريد إلى شخص لا يملك حسابًا لدى البنك. ما سبب الاشتباه الأساسي؟", options: ["وجود تعليمات غير معتادة لتحويل قيمة الحوالة إلى شيكات وإرسالها لطرف غير صاحب حساب", "لأن الشيكات لا تستخدم في البنوك", "لأن التحويل خارجي", "لأن العميل يملك حسابًا"], answer: "وجود تعليمات غير معتادة لتحويل قيمة الحوالة إلى شيكات وإرسالها لطرف غير صاحب حساب" },
@@ -430,15 +453,14 @@
 
         const PASSING_SCORE = 60; 
         const CONFIG = {
-            // مفاتيح جديدة لضمان تصفير النظام وبدء اختبار جديد تماماً
-            STORAGE_KEY: "KIB_COMPLIANCE_FINAL_V2",      
-            EXIT_COUNT_KEY: "KIB_COMPLIANCE_EXIT_V2",    
-            USER_QUESTIONS_KEY: "KIB_COMPLIANCE_Q_V2",   
+            STORAGE_KEY: "KIB_COMPLIANCE_QUIZ_V1",      
+            EXIT_COUNT_KEY: "KIB_COMPLIANCE_EXIT_V1",    
+            USER_QUESTIONS_KEY: "KIB_COMPLIANCE_Q_V1",   
             GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwSS5O1vu0zEn55eBe3VPBbLfUy77Ge993s6p0B_h54WK7KIkjglbGcc8xc1Py-NerY/exec",
             RESET_PASSWORD: "KIB2026",
             ADMINS: {
-                "KIB2026": { name: "إدارة الامتثال", role: "super_admin", email: "compliance@kib.com" },
-                "Shaimaotp": { name: "شيماء", role: "super_admin", email: "Shaimaotp@outlook.com" }
+                "Compliance2026": { name: "إدارة الامتثال", role: "super_admin", email: "compliance@kib.com" },
+                "KIB2026": { name: "مدير النظام", role: "super_admin", email: "admin@kib.com" }
             }
         };
 
@@ -493,7 +515,6 @@
             if (isQuizActive && quizState[currentQuestion]?.status !== 'locked') startTimer();
         }
 
-        // ==================== التحقق من البيانات لمنع التكرار عبر السيرفر ====================
         document.getElementById('introForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const nameInput = document.getElementById('empName');
@@ -514,44 +535,42 @@
                 jobTitle: document.getElementById('empJobTitle').value.trim()
             };
             
-            // 1. إظهار شاشة جاري التحقق
-            const verifyOverlay = document.getElementById('verifyOverlay');
-            verifyOverlay.classList.remove('hidden');
+            const hasAdminOverride = sessionStorage.getItem('ADMIN_OVERRIDE') === 'true';
 
-            try {
-                // 2. سحب البيانات من السيرفر باستخدام GET
-                const res = await fetch(CONFIG.GOOGLE_SCRIPT_URL);
-                const text = await res.text();
-                const data = JSON.parse(text);
+            if (!hasAdminOverride) {
+                const verifyOverlay = document.getElementById('verifyOverlay');
+                verifyOverlay.classList.remove('hidden');
 
-                // 3. التحقق من وجود الرقم الوظيفي أو الاسم مسبقاً
-                const isDuplicate = data.some(d => {
-                    // تجاهل الحقول الفارغة، ومقارنة النصوص بعد إزالة المسافات
-                    const serverId = (d.empId || "").toString().trim();
-                    const serverName = (d.empName || "").toString().trim();
-                    const currentId = employeeInfo.id.toString().trim();
-                    const currentName = employeeInfo.name.toString().trim();
+                try {
+                    const res = await fetch(CONFIG.GOOGLE_SCRIPT_URL);
+                    const data = await res.json();
 
-                    return (serverId !== "" && serverId === currentId) || 
-                           (serverName !== "" && serverName === currentName);
-                });
+                    const isDuplicate = data.some(d => {
+                        const serverId = (d.empId || "").toString().trim();
+                        const serverName = (d.empName || "").toString().trim();
+                        const currentId = employeeInfo.id.toString().trim();
+                        const currentName = employeeInfo.name.toString().trim();
 
-                if(isDuplicate) {
-                    verifyOverlay.classList.add('hidden');
-                    alert("⚠️ عذراً، هذا الرقم الوظيفي أو الاسم مسجل مسبقاً في قاعدة البيانات. لقد قمت بإجراء الاختبار من قبل ولا يُسمح بإعادته.");
-                    return; // إيقاف الدخول تماماً
+                        return (serverId !== "" && serverId === currentId) || 
+                               (serverName !== "" && serverName === currentName);
+                    });
+
+                    if(isDuplicate) {
+                        verifyOverlay.classList.add('hidden');
+                        alert("⚠️ عذراً، هذا الرقم الوظيفي أو الاسم مسجل مسبقاً في قاعدة البيانات. لقد قمت بإجراء الاختبار من قبل ولا يُسمح بإعادته.");
+                        return;
+                    }
+                } catch(error) {
+                    console.error("فشل التحقق من قاعدة البيانات", error);
                 }
-            } catch(error) {
-                console.error("فشل التحقق من قاعدة البيانات، قد يكون السيرفر محظوراً أو الرابط غير صحيح.", error);
+
+                verifyOverlay.classList.add('hidden');
             }
 
-            // 4. إذا لم يكن مكرراً أو تجاوزنا الفحص، ننتقل للتحذير
-            verifyOverlay.classList.add('hidden');
             pendingStart = true;
             document.getElementById('warningModal').classList.remove('hidden');
         });
 
-        // خلط المصفوفة
         function shuffleArray(array) {
             let curId = array.length;
             while (0 !== curId) {
@@ -564,7 +583,6 @@
             return array;
         }
 
-        // خوارزمية سحب الأسئلة بدقة
         function generateRandomQuiz() {
             const easyList = shuffleArray(ALL_QUESTIONS.filter(q => q.difficulty === 'easy')).slice(0, 7);
             const mediumList = shuffleArray(ALL_QUESTIONS.filter(q => q.difficulty === 'medium')).slice(0, 11);
@@ -572,12 +590,15 @@
             const veryHardList = shuffleArray(ALL_QUESTIONS.filter(q => q.difficulty === 'very_hard')).slice(0, 2);
 
             let combined = [...easyList, ...mediumList, ...hardList, ...veryHardList];
-            return shuffleArray(combined);
+            return shuffleArray(combined); 
         }
 
         function confirmStartQuiz() {
             if (!pendingStart) return;
             pendingStart = false;
+            
+            sessionStorage.removeItem('ADMIN_OVERRIDE');
+
             document.getElementById('warningModal').classList.add('hidden');
             document.getElementById('introScreen').classList.add('hidden');
             document.getElementById('quizScreen').classList.remove('hidden');
@@ -608,6 +629,9 @@
                 localStorage.removeItem(CONFIG.USER_QUESTIONS_KEY);
                 localStorage.removeItem('KIB_EMP_NAME'); 
                 localStorage.removeItem('KIB_FINAL_SCORE');
+                
+                sessionStorage.setItem('ADMIN_OVERRIDE', 'true');
+
                 document.getElementById('resetModal').classList.add('hidden');
                 document.getElementById('successScreen')?.classList.add('hidden');
                 document.getElementById('failScreen')?.classList.add('hidden');
@@ -732,21 +756,14 @@
             const final = Math.round(score);
             const passed = final >= PASSING_SCORE;
 
-            // ================= الحفظ المحلي الصارم (أولاً وقبل كل شيء) =================
-            // يتم الحفظ محلياً فوراً لمنع التحديث (Refresh) للتحايل على النظام
             localStorage.setItem(CONFIG.STORAGE_KEY, passed ? 'submitted' : 'submitted_failed');
             localStorage.setItem('KIB_EMP_NAME', employeeInfo.name);
             localStorage.setItem('KIB_FINAL_SCORE', final.toString());
             localStorage.setItem(CONFIG.EXIT_COUNT_KEY, exitCount.toString());
 
-            // إظهار واجهة النتيجة مباشرةً
-            if (passed) {
-                showSuccessScreen(final);
-            } else {
-                showFailScreen(final);
-            }
+            if (passed) showSuccessScreen(final);
+            else showFailScreen(final);
             
-            // ================= الإرسال إلى السيرفر (ثانياً) =================
             const fd = new FormData();
             fd.append('timestamp', new Date().toLocaleString('ar-SA')); 
             fd.append('empId', employeeInfo.id); 
@@ -755,13 +772,18 @@
             fd.append('jobTitle', employeeInfo.jobTitle); 
             fd.append('score', final.toString()); 
             fd.append('timeSpent', timeSpent); 
-            fd.append('exitCount', exitCount.toString()); 
+            fd.append('exitCount', exitCount.toString());
+            fd.append('passed', passed.toString()); 
             fd.append('details', JSON.stringify(quizState)); 
             
             try {
-                // إرسال البيانات باستخدام mode: 'no-cors' لضمان عبور البيانات رغم حجب المتصفح
                 await fetch(CONFIG.GOOGLE_SCRIPT_URL, { method: 'POST', body: fd, mode: 'no-cors' });
-                console.log('Data successfully dispatched to server.');
+                const st = passed ? document.getElementById('successStatusDisplay') : document.getElementById('failStatusDisplay');
+                if(st) {
+                    st.innerHTML = '<i class="fas fa-check"></i> تم الحفظ بنجاح.';
+                    st.classList.replace('bg-blue-50', 'bg-green-50'); st.classList.replace('text-blue-800', 'text-green-800');
+                    st.classList.replace('bg-red-50', 'bg-green-50'); st.classList.replace('text-red-800', 'text-green-800');
+                }
             } catch (e) { 
                console.error('Network error during dispatch', e);
             }
@@ -786,7 +808,6 @@
         function showToast(m) { const t = document.getElementById('validationToast'); if (!t) return; document.getElementById('toastMessage').textContent = m; t.classList.remove('hidden'); clearTimeout(window._toastT); window._toastT = setTimeout(hideToast, 3000); }
         function hideToast() { document.getElementById('validationToast').classList.add('hidden'); }
 
-        // ==================== دوال المشرف ====================
         function showAdminLogin() { document.getElementById('adminModal').classList.remove('hidden'); document.getElementById('adminPassInput').value = ''; document.getElementById('adminAuthError').classList.add('hidden'); }
         function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
         function logoutAdmin() { currentAdmin = null; document.getElementById('adminDashboard').classList.add('hidden'); document.getElementById('employeeApp').classList.remove('hidden'); location.reload(); }
@@ -816,17 +837,17 @@
 
         async function loadDashboard() {
             const tbody = document.getElementById('responsesTableBody'); if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 font-bold text-gray-500"><i class="fas fa-spinner fa-spin"></i> جاري تحميل البيانات...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-gray-500"><i class="fas fa-spinner fa-spin"></i> جاري تحميل البيانات...</td></tr>';
             try {
-                const res = await fetch(CONFIG.GOOGLE_SCRIPT_URL); const text = await res.text();
-                allServerData = JSON.parse(text); renderAdminData();
-            } catch (e) { tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 font-bold text-red-500">تعذر الاتصال بالسيرفر.</td></tr>'; }
+                const res = await fetch(CONFIG.GOOGLE_SCRIPT_URL); const data = await res.json();
+                allServerData = data; renderAdminData();
+            } catch (e) { tbody.innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-red-500">تعذر الاتصال بالسيرفر.</td></tr>'; }
         }
         function refreshDashboard() { loadDashboard(); }
 
         function renderAdminData() {
             if (!allServerData || !allServerData.length) {
-                document.getElementById('responsesTableBody').innerHTML = '<tr><td colspan="8" class="text-center p-8 font-bold text-gray-500">لا توجد بيانات حالياً</td></tr>';
+                document.getElementById('responsesTableBody').innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-gray-500">لا توجد بيانات حالياً</td></tr>';
                 return;
             }
             document.getElementById('totalParticipants').textContent = allServerData.length;
@@ -839,28 +860,92 @@
             
             const tbody = document.getElementById('responsesTableBody'); tbody.innerHTML = '';
             [...allServerData].reverse().forEach((d, idx) => {
+                const actual = allServerData.length - 1 - idx;
                 const passed = parseFloat(d.score) >= PASSING_SCORE;
                 const scoreColor = d.score >= 80 ? 'text-green-600' : (d.score >= 60 ? 'text-yellow-600' : 'text-red-600');
                 
+                const actionCell = `<button class="bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded transition shadow-sm" onclick="viewDetails(${actual})" title="مشاهدة الإجابات"><i class="fas fa-eye"></i></button>`;
+
                 const row = document.createElement('tr'); row.className = 'border-b hover:bg-gray-50';
-                row.innerHTML = `<td class="p-3 text-gray-500 text-xs">${(d.timestamp||'-').split(',')[0]}</td><td class="p-3 font-bold text-gray-700">${d.empId||'-'}</td><td class="p-3 font-bold text-[#0369a1]">${d.empName||'-'}</td><td class="p-3 font-semibold text-gray-700 text-xs">${d.department||'-'}</td><td class="p-3 text-center text-xs font-bold text-gray-500">${d.timeSpent||'-'}</td><td class="p-3 text-center font-black text-xl ${scoreColor}">${d.score||0}%</td><td class="p-3 text-center font-bold text-gray-600">${d.exitCount||0}</td><td class="p-3 text-center font-bold text-xs ${passed ? 'text-green-600' : 'text-red-500'}">${passed ? 'مجتاز' : 'غير مجتاز'}</td>`;
+                row.innerHTML = `<td class="p-3 text-gray-500 text-xs">${(d.timestamp||'-').split(',')[0]}</td><td class="p-3 font-bold text-gray-700">${d.empId||'-'}</td><td class="p-3 font-bold text-[#0369a1]">${d.empName||'-'}</td><td class="p-3 font-semibold text-gray-700 text-xs">${d.department||'-'}</td><td class="p-3 text-center text-xs font-bold text-gray-500">${d.timeSpent||'-'}</td><td class="p-3 text-center font-black text-xl ${scoreColor}">${d.score||0}%</td><td class="p-3 text-center font-bold text-gray-600">${d.exitCount||0}</td><td class="p-3 text-center font-bold text-xs ${passed ? 'text-green-600' : 'text-red-500'}">${passed ? 'مجتاز' : 'غير مجتاز'}</td><td class="p-3 text-center">${actionCell}</td>`;
                 tbody.appendChild(row);
             });
         }
 
+        function viewDetails(index) {
+            const data = allServerData[index];
+            if(!data) return;
+            document.getElementById('viewEmpName').textContent = data.empName;
+            const content = document.getElementById('viewContent');
+            content.innerHTML = '';
+            try {
+                const details = JSON.parse(data.details || '[]');
+                if(details.length === 0) {
+                    content.innerHTML = '<p class="text-center text-gray-500 font-bold p-8">لا توجد تفاصيل محفوظة لهذا الاختبار.</p>';
+                } else {
+                    details.forEach((q, i) => {
+                        const isCorrect = q.userAnswer && q.userAnswer.trim() === q.correctAnswer.trim();
+                        const colorClass = isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50';
+                        const icon = isCorrect ? '<i class="fas fa-check-circle text-green-500 text-xl mt-0.5"></i>' : '<i class="fas fa-times-circle text-red-500 text-xl mt-0.5"></i>';
+                        
+                        const card = document.createElement('div');
+                        card.className = `border ${colorClass} rounded-xl p-4 shadow-sm`;
+                        card.innerHTML = `
+                            <div class="flex gap-3 items-start mb-3">
+                                ${icon}
+                                <h4 class="font-bold text-gray-800 text-sm md:text-base flex-1 leading-relaxed">سؤال ${i+1}: ${q.questionText}</h4>
+                            </div>
+                            <div class="pl-2 md:pl-8 space-y-2 text-xs md:text-sm">
+                                <p class="text-gray-700 bg-white p-2 rounded border border-gray-100"><strong>إجابة الموظف:</strong> <span class="${isCorrect ? 'text-green-700 font-bold' : 'text-red-600 font-bold'}">${q.userAnswer || 'لم يُجب'}</span></p>
+                                ${!isCorrect ? `<p class="text-green-800 bg-green-100/50 p-2 rounded border border-green-200"><strong>الإجابة الصحيحة:</strong> ${q.correctAnswer}</p>` : ''}
+                            </div>
+                        `;
+                        content.appendChild(card);
+                    });
+                }
+            } catch(e) {
+                content.innerHTML = '<p class="text-red-500 text-center font-bold p-8">تعذر قراءة البيانات المحفوظة.</p>';
+            }
+            document.getElementById('viewModal').classList.remove('hidden');
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.add('hidden');
+        }
+
         function exportToExcel() {
-            if (!allServerData || !allServerData.length) return alert('لا توجد بيانات للتصدير');
-            if (currentAdmin?.role !== 'super_admin') return alert('للمشرف الرئيسي فقط');
-            const data = allServerData.map(d => {
-                const row = { 'التاريخ': d.timestamp, 'الرقم الوظيفي': d.empId, 'الاسم': d.empName, 'الإدارة': d.department, 'النتيجة': d.score, 'الوقت': d.timeSpent, 'خروج': d.exitCount };
+            if (!allServerData || !allServerData.length) {
+                alert('لا توجد بيانات للتصدير');
+                return;
+            }
+            
+            const exportData = allServerData.map(d => {
+                const row = { 
+                    'التاريخ': d.timestamp, 
+                    'الرقم الوظيفي': d.empId, 
+                    'اسم الموظف': d.empName, 
+                    'الإدارة/الفرع': d.department, 
+                    'المسمى الوظيفي': d.jobTitle,
+                    'النتيجة %': d.score, 
+                    'الوقت المستغرق': d.timeSpent, 
+                    'مخالفات الخروج': d.exitCount,
+                    'الحالة': (parseFloat(d.score) >= PASSING_SCORE) ? 'مجتاز' : 'غير مجتاز'
+                };
                 try { 
-                    JSON.parse(d.details || '[]').forEach(a => { 
-                        row[`سؤال ${a.questionId}: ${a.questionText}`] = a.userAnswer; 
+                    const details = JSON.parse(d.details || '[]');
+                    details.forEach((a, i) => { 
+                        row[`سؤال ${i+1}`] = a.questionText;
+                        row[`إجابة ${i+1}`] = a.userAnswer;
+                        row[`النتيجة ${i+1}`] = (a.userAnswer && a.userAnswer.trim() === a.correctAnswer.trim()) ? 'صحيحة' : 'خاطئة';
                     }); 
-                } catch (e) {}
+                } catch (e) {
+                    console.error("Error parsing details for export", e);
+                }
                 return row;
             });
-            const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'النتائج');
+            const ws = XLSX.utils.json_to_sheet(exportData); 
+            const wb = XLSX.utils.book_new(); 
+            XLSX.utils.book_append_sheet(wb, ws, 'النتائج');
             XLSX.writeFile(wb, `نتائج_الامتثال_${new Date().toLocaleDateString('ar-SA').replace(/\//g, '-')}.xlsx`);
         }
     </script>
