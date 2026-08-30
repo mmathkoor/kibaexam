@@ -36,24 +36,10 @@
         .verify-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .verify-overlay.hidden { display: none !important; }
 
-        /* تنسيقات الشهادة (للمشرف فقط) */
-        #certificateScreen { display: flex; align-items: center; justify-content: center; background: #e5e7eb; min-height: 100vh; padding: 20px; }
-        #certificateScreen.hidden { display: none !important; }
-        .cert-container { width: 297mm; height: 210mm; background: white; position: relative; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.15); max-width: 100%; aspect-ratio: 297 / 210; height: auto; }
-        .cert-wave-1 { position: absolute; top: -10%; right: -8%; width: 45%; height: 130%; background: radial-gradient(circle at 70% 50%, rgba(3, 105, 161, 0.15) 0%, rgba(3, 105, 161, 0.05) 70%, transparent 100%); border-radius: 60% 20% 30% 60%; transform: rotate(8deg); filter: blur(3px); opacity: 0.6; }
-        .cert-wave-2 { position: absolute; top: -15%; right: 5%; width: 30%; height: 140%; background: radial-gradient(circle at 30% 40%, rgba(212, 175, 55, 0.12) 0%, rgba(212, 175, 55, 0.05) 60%, transparent 100%); border-radius: 40% 60% 50% 30%; transform: rotate(-5deg); filter: blur(4px); opacity: 0.5; }
-        .cert-wave-3 { position: absolute; top: 15%; right: 15%; width: 25%; height: 100%; background: radial-gradient(circle at 50% 60%, rgba(3, 105, 161, 0.08) 0%, transparent 80%); border-radius: 70% 30% 20% 80%; transform: rotate(15deg); filter: blur(5px); opacity: 0.3; }
-        .calligraphy-wrapper { position: relative; display: inline-block; }
-        .calligraphy-img { display: block; height: 8rem; mix-blend-mode: multiply; }
-        .calligraphy-overlay { position: absolute; inset: 0; background-color: #0369a1; mix-blend-mode: screen; pointer-events: none; }
-
         @media print {
             @page { size: A4 landscape; margin: 0; }
             body { background: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; margin: 0; }
             body * { visibility: hidden; }
-            #certificateScreen, #certificateScreen * { visibility: visible; }
-            #certificateScreen { position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; margin: 0; padding: 0; background: white; }
-            .cert-container { width: 297mm !important; height: 210mm !important; box-shadow: none !important; margin: 0 !important; max-width: none !important; aspect-ratio: auto !important;}
             .no-print { display: none !important; }
             #adminDashboard, #failScreen, #successScreen, #employeeApp { display: none !important; }
         }
@@ -145,7 +131,7 @@
                 <ul class="space-y-3 text-red-800 font-semibold">
                     <li class="flex items-start gap-2"><i class="fas fa-random text-red-500 mt-1"></i><span><strong>الأسئلة (25 سؤال) تظهر بشكل عشوائي</strong> وتختلف من موظف لآخر.</span></li>
                     <li class="flex items-start gap-2"><i class="fas fa-eye text-red-500 mt-1"></i><span><strong>يتم تسجيل عدد مرات الخروج من المتصفح</strong>.</span></li>
-                    <li class="flex items-start gap-2"><i class="fas fa-ban text-red-500 mt-1"></i><span><strong>الاختبار لمرة واحدة فقط</strong>، ولا يمكن إعادة الدخول بنفس البيانات.</span></li>
+                    <li class="flex items-start gap-2"><i class="fas fa-ban text-red-500 mt-1"></i><span><strong>الاختبار لمرة واحدة فقط</strong>، ولا يمكن إعادة الدخول بنفس البيانات أو من متصفح آخر.</span></li>
                     <li class="flex items-start gap-2"><i class="fas fa-stopwatch text-red-500 mt-1"></i><span><strong>كل سؤال له دقيقتين فقط</strong>، وبعدها يقفل تلقائياً.</span></li>
                 </ul>
             </div>
@@ -182,7 +168,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-bold mb-2 text-gray-700">اسم الموظف (رباعي) *</label>
-                            <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#0369a1] outline-none transition" placeholder="مثال: محمد أحمد محمد">
+                            <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#0369a1] outline-none transition" placeholder="مثال: محمد أحمد البكيلي">
                             <p id="empNameError" class="text-red-500 text-xs mt-1 hidden">يجب إدخال الاسم الرباعي (3 كلمات على الأقل)</p>
                         </div>
                     </div>
@@ -228,7 +214,7 @@
         </main>
     </div>
 
-    <!-- ==================== شاشة النجاح للموظف (بديلة للشهادة المباشرة) ==================== -->
+    <!-- ==================== شاشة النجاح للموظف ==================== -->
     <div id="successScreen" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-gray-100 p-4 no-print">
         <div class="bg-white max-w-lg w-full rounded-2xl shadow-2xl p-8 md:p-10 text-center border-t-4 border-[#10B981]">
             <i class="fas fa-check-circle text-[#10B981] text-6xl mb-5"></i>
@@ -293,15 +279,15 @@
             </div>
             <div class="bg-white p-4 rounded-xl shadow-sm">
                 <div class="flex justify-between items-center mb-4 border-r-4 border-[#F5B335] pr-2">
-                    <h3 class="text-sm font-bold text-[#0369a1]">سجل الموظفين وإصدار الشهادات</h3>
+                    <h3 class="text-sm font-bold text-[#0369a1]">سجل الموظفين والنتائج</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-right">
                         <thead class="bg-gray-50 text-gray-600 text-xs border-b" id="tableHeader">
-                            <tr><th class="p-3">التاريخ</th><th class="p-3">الرقم الوظيفي</th><th class="p-3">اسم الموظف</th><th class="p-3">الإدارة/الوظيفة</th><th class="p-3 text-center">الوقت المستغرق</th><th class="p-3 text-center">النتيجة %</th><th class="p-3 text-center">مخالفات</th><th class="p-3 text-center">الحالة</th><th class="p-3 text-center">الإجراءات</th></tr>
+                            <tr><th class="p-3">التاريخ</th><th class="p-3">الرقم الوظيفي</th><th class="p-3">اسم الموظف</th><th class="p-3">الإدارة/الوظيفة</th><th class="p-3 text-center">الوقت المستغرق</th><th class="p-3 text-center">النتيجة %</th><th class="p-3 text-center">مخالفات</th><th class="p-3 text-center">الحالة</th></tr>
                         </thead>
                         <tbody id="responsesTableBody" class="text-sm">
-                            <tr><td colspan="9" class="text-center p-8 font-bold text-gray-500">جاري تحميل البيانات...</td></tr>
+                            <tr><td colspan="8" class="text-center p-8 font-bold text-gray-500">جاري تحميل البيانات...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -309,74 +295,11 @@
         </main>
     </div>
 
-    <!-- ==================== قالب الشهادة (للمشرف فقط) ==================== -->
-    <div id="certificateScreen" class="hidden">
-        
-        <div class="absolute top-4 left-1/2 -translate-x-1/2 flex gap-4 z-50 no-print">
-            <button onclick="downloadCertificateDirect()" class="bg-[#10B981] text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-green-700 transition flex items-center gap-2"><i class="fas fa-download"></i> تحميل كصورة</button>
-            <button onclick="window.print()" class="bg-[#0369a1] text-white px-6 py-2 rounded-full font-bold shadow-lg hover:bg-blue-800 transition flex items-center gap-2"><i class="fas fa-print"></i> طباعة PDF</button>
-            <button onclick="closeAdminCertificate()" class="bg-white text-gray-700 px-6 py-2 rounded-full font-bold shadow hover:bg-gray-50 transition flex items-center gap-2"><i class="fas fa-arrow-right"></i> العودة للوحة</button>
-        </div>
-
-        <div class="cert-container flex flex-col justify-between pb-8" id="certificateNode">
-            <div class="cert-wave-1"></div>
-            <div class="cert-wave-2"></div>
-            <div class="cert-wave-3"></div>
-            <div class="cert-wave-4"></div>
-
-            <div class="absolute top-12 left-14 z-20">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRsFg-KSNPUEAC6JediLALioI1gW4IO83MRikrmf9ZXnvgukItN1ab-aRk&s=10" alt="KIB Logo" class="h-16 md:h-20 object-contain" crossorigin="anonymous">
-            </div>
-
-            <div class="relative z-10 w-full px-20 pt-24 text-center">
-                <div class="flex justify-center mb-2">
-                    <div class="calligraphy-wrapper">
-                        <img src="https://i.pinimg.com/736x/53/bf/d2/53bfd2b033cfd1e288b9a58d288a11eb.jpg" alt="شهادة مشاركة" class="calligraphy-img" crossorigin="anonymous">
-                        <div class="calligraphy-overlay"></div>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-center gap-4 mb-8">
-                    <div class="w-16 h-[2px] bg-[#d4af37]"></div>
-                    <p class="text-[#d4af37] text-lg md:text-xl tracking-[0.2em] font-bold uppercase">PARTICIPATION CERTIFICATE</p>
-                    <div class="w-16 h-[2px] bg-[#d4af37]"></div>
-                </div>
-
-                <p class="text-xl md:text-2xl text-gray-700 font-bold mb-4 tracking-wide">يشهد بنك الكريمي الإسلامي بأن | THIS IS TO CERTIFY THAT</p>
-
-                <div class="border-b border-gray-400 mx-auto w-3/4 pb-3 mb-10">
-                    <h2 id="finalCertName" class="text-3xl md:text-4xl font-black text-[#1a202c]">الاسم يظهر هنا</h2>
-                </div>
-
-                <div class="w-full max-w-[85%] mx-auto mb-6 text-gray-700 font-bold text-[15px] md:text-lg text-center" style="line-height:1.9;">
-                    <p dir="rtl" class="mb-2">
-                        قد أتم بنجاح البرنامج التدريبي: <span class="text-[#0369a1]">"الامتثال ومكافحة غسل الأموال"</span><br>
-                        والذي تم تنظيمه بواسطة البنك لرفع مستوى الوعي والامتثال.
-                    </p>
-                    <p dir="ltr" class="mb-0 text-sm md:text-base text-gray-600">
-                        Has successfully completed the training program: <span class="text-[#0369a1]">"Compliance & AML Program"</span><br>
-                        organized by KIB to enhance awareness and compliance.
-                    </p>
-                </div>
-
-                <div class="text-center text-[#0369a1] font-bold mb-4">
-                    <p class="text-lg md:text-xl mb-1">متمنين له مزيداً من التميز والنجاح المستمر.</p>
-                    <p class="uppercase text-xs md:text-sm tracking-wider opacity-80 mb-2">WISHING HIM CONTINUED SUCCESS AND EXCELLENCE.</p>
-                    <p class="text-gray-500 font-semibold text-[11px] md:text-xs">تاريخ الإصدار: <span id="certIssueDate">-</span></p>
-                </div>
-            </div>
-
-            <div class="relative z-10 w-full flex items-center justify-center">
-                <img id="officialSeal" src="https://kibaexam.vercel.app/1.png" crossorigin="anonymous" class="w-28 h-28 object-contain" style="filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1)); transform: rotate(-5deg);" alt="Official Seal">
-            </div>
-        </div>
-    </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         // ==================== بنك الأسئلة الشامل ====================
         const ALL_QUESTIONS = [
-            /* أسئلة مستوى: سهل */
+            /* ================= مستوى سهل ================= */
             { difficulty: "easy", section: "التقييم المعرفي", type: "mcq", q: "ما الغرض من إخفاء الأثر في غسل الأموال؟", options: ["زيادة عدد المعاملات", "قطع الصلة بين الجريمة والأموال الناتجة عنها", "زيادة سرعة التسوية", "تحسين جودة المستندات"], answer: "قطع الصلة بين الجريمة والأموال الناتجة عنها" },
             { difficulty: "easy", section: "التقييم المعرفي", type: "mcq", q: "ما القيد الرئيسي الذي فرضته قاعدة الذهب على الدول؟", options: ["عدم القدرة على إصدار أي عملة", "ارتباط كمية النقود بدرجة كبيرة بكمية الذهب المتاحة", "منع التجارة الدولية", "منع الاستثمار الأجنبي"], answer: "ارتباط كمية النقود بدرجة كبيرة بكمية الذهب المتاحة" },
             { difficulty: "easy", section: "التقييم المعرفي", type: "mcq", q: "أي مما يلي يمثل جريمة أصلية وفق المادة التدريبية؟", options: ["فتح حساب مصرفي", "الاحتيال المالي", "تحديث بيانات العميل", "تحويل راتب الموظف"], answer: "الاحتيال المالي" },
@@ -397,7 +320,7 @@
             { difficulty: "easy", section: "التقييم المعرفي", type: "mcq", q: "ما المقصود بـشركات الواجهة Front Company؟", options: ["شركة واجهة تستخدم كغطاء لنشاط أو أموال غير مشروعة", "شركة حكومية", "شركة تأمين", "شركة صرافة فقط"], answer: "شركة واجهة تستخدم كغطاء لنشاط أو أموال غير مشروعة" },
             { difficulty: "easy", section: "التقييم المعرفي", type: "mcq", q: "ما المقصود بالاحتيال في السياق المصرفي؟", options: ["أي معاملة مرتفعة القيمة", "استخدام الخداع أو التضليل أو وسائل غير مشروعة للحصول على منفعة أو أموال دون وجه حق", "تأخير معاملة العميل", "رفض فتح حساب"], answer: "استخدام الخداع أو التضليل أو وسائل غير مشروعة للحصول على منفعة أو أموال دون وجه حق" },
 
-            /* أسئلة مستوى: متوسط */
+            /* ================= مستوى متوسط ================= */
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "في حالة الطائر الواقواق Cuckoo Smurfing، ماذا يحدث للقيمة المقابلة للأموال في الخارج وفق المادة؟", options: ["تدخل دائمًا عبر الحوالة البنكية الرسمية", "تتم تسويتها خارج النظام المالي الرسمي", "يتم تحويلها إلى ذهب في البنك", "يتم إلغاؤها"], answer: "تتم تسويتها خارج النظام المالي الرسمي" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "أي من التالي يمثل مؤشرًا متعلقًا بوثيقة الهوية؟", options: ["تقديم وثيقة هوية منتهية الصلاحية", "استخدام بطاقة مصرفية", "وجود حساب توفير", "طلب دفتر شيكات"], answer: "تقديم وثيقة هوية منتهية الصلاحية" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "لماذا يعد الموظف خط الدفاع الأول في مكافحة الجرائم المالية وفق المادة؟", options: ["لأنه يحدد أسعار العملات", "لأنه يلاحظ العمليات وسلوك العملاء ويطبق الإجراءات", "لأنه يقرر السياسات النقدية", "لأنه يدير البنك بالكامل"], answer: "لأنه يلاحظ العمليات وسلوك العملاء ويطبق الإجراءات" },
@@ -405,7 +328,7 @@
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "ما العامل الأساسي الذي يركز عليه تمويل الإرهاب؟", options: ["حجم العملية فقط", "مصدر الأموال فقط", "المال والغرض من استخدامه والمستفيد النهائي", "نوع العملة المستخدمة فقط"], answer: "المال والغرض من استخدامه والمستفيد النهائي" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "لماذا زادت الضغوط على قاعدة الذهب أثناء الحرب العالمية الأولى؟", options: ["بسبب انخفاض الطلب على الذهب فقط", "بسبب حاجة الدول إلى تمويل الإنفاق العسكري وإصدار المزيد من النقود", "بسبب توقف الزراعة", "بسبب إلغاء البنوك"], answer: "بسبب حاجة الدول إلى تمويل الإنفاق العسكري وإصدار المزيد من النقود" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "لماذا قد يكون التعامل مع منطقة عالية المخاطر موضع اهتمام؟", options: ["لأنها دائمًا غير قانونية", "لأنها قد ترفع مستوى المخاطر عند غياب مبرر واضح للمعاملة", "لأنها تمنع التحويلات", "لأنها تؤدي دائمًا إلى رفض العملية"], answer: "لأنها قد ترفع مستوى المخاطر عند غياب مبرر واضح للمعاملة" },
-            { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "ما الذي يميز تمويل الإرهاب عن غسل الأموال من ناحية مصدر الأموال؟", options: ["أموال تمويل الإرهاب يجب أن تكون غير مشروعة دائمًا", "أموال تمويل الإرهاب قد تأتي من مصادر مشروعة أو غير مشروعة", "غسل الأموال فقط قد يأتي من مصدر مشروع", "لا يوجد اختلاف"], answer: "أموال تمويل الإرهاب قد تأتي من مصادر مشروعة أو غير مشروعة" },
+            { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "ما الذي يميز تمويل الإرهاب عن غسل الأموال من ناحية مصدر الأموال؟", options: ["أموال تمويل الإرهاب يجب أن تكون غير مشروعة دائمًا", "أموال تمويل الإرهاب قد تأتي من مصادر مشروعة أو غير مشروعة", "غسل الأموال فقط قد تأتي من مصدر مشروع", "لا يوجد اختلاف"], answer: "أموال تمويل الإرهاب قد تأتي من مصادر مشروعة أو غير مشروعة" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "لماذا ساعدت المعادن النفيسة على تطور النظام النقدي؟", options: ["لأنها غير قابلة للنقل", "لأنها قابلة للتقسيم والحفظ والنقل", "لأنها تصدر من البنوك فقط", "لأنها لا تخضع للتقييم"], answer: "لأنها قابلة للتقسيم والحفظ والنقل" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "لماذا قد يكون اكتشاف تمويل الإرهاب صعبًا؟", options: ["لأنه لا يحدث عبر النظام المالي", "لأن المعاملات قد تكون صغيرة ومن مصادر تبدو مشروعة وموزعة على عدة عمليات", "لأنه يقتصر على النقد", "لأنه لا يستخدم حسابات حقيقية"], answer: "لأن المعاملات قد تكون صغيرة ومن مصادر تبدو مشروعة وموزعة على عدة عمليات" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "أي من الحالات التالية تمثل رفع قيمة الفاتورة في غسل الأموال عبر التجارة الدولية TBML؟", options: ["تسجيل قيمة أقل من القيمة الحقيقية للبضاعة", "تسجيل قيمة أعلى من القيمة الحقيقية للبضاعة", "إلغاء الفاتورة", "تغيير البنك المراسل"], answer: "تسجيل قيمة أعلى من القيمة الحقيقية للبضاعة" },
@@ -432,7 +355,7 @@
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "ماذا يقصد بالإضرار بالمصالح والحقوق المالية؟", options: ["زيادة أرباح الدولة", "تعمد إلحاق خسائر اقتصادية بالدولة أو المؤسسات أو الأفراد", "تحسين المنافسة", "تخفيض تكاليف التشغيل"], answer: "تعمد إلحاق خسائر اقتصادية بالدولة أو المؤسسات أو الأفراد" },
             { difficulty: "medium", section: "التقييم المعرفي", type: "mcq", q: "ما الذي كانت تعتمد عليه التجارة في المجتمعات القديمة بشكل أساسي؟", options: ["العملات الورقية", "المقايضة", "التحويلات المصرفية", "الذهب فقط"], answer: "المقايضة" },
 
-            /* أسئلة مستوى: صعب */
+            /* ================= مستوى صعب ================= */
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "وصلت رسالة تبدو من المدير التنفيذي تطلب تحويل 250,000 دولار إلى مورد جديد بشكل عاجل، مع تغيير حديث في بيانات الحساب البنكي. ما الإجراء الأكثر توافقًا مع المادة؟", options: ["تنفيذ التحويل فورًا بسبب صفة المدير", "تجاوز إجراءات التحقق لتوفير الوقت", "التحقق من الطلب والبيانات وعدم تجاوز الإجراءات", "حذف البريد الإلكتروني"], answer: "التحقق من الطلب والبيانات وعدم تجاوز الإجراءات" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "إذا كان نشاط العميل لا يتطلب التعامل بالنقد بصورة جوهرية لكنه يجري إيداعات نقدية كبيرة، فما دلالة ذلك؟", options: ["عدم التناسب بين استخدام النقد وطبيعة النشاط", "دليل على نجاح النشاط", "دليل على انخفاض المخاطر", "مؤشر تقني فقط"], answer: "عدم التناسب بين استخدام النقد وطبيعة النشاط" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "ما الذي قد يشير إلى استخدام عدة حسابات لإخفاء أو توزيع حركة الأموال؟", options: ["استخدام عدة حسابات لتجميع أو تحويل مبالغ مترابطة", "استخدام حساب واحد فقط", "إغلاق الحسابات", "تحديث بيانات الحساب"], answer: "استخدام عدة حسابات لتجميع أو تحويل مبالغ مترابطة" },
@@ -497,7 +420,7 @@
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يعيد جزءًا من الأموال التي كان يريد إيداعها فور إبلاغه بضرورة استكمال إجراءات العناية الواجبة. ماذا قد يعني ذلك؟", options: ["محاولة تفادي إجراءات العناية الواجبة", "زيادة النشاط الطبيعي", "خطأ محاسبي مؤكد", "تحديث في بيانات العميل"], answer: "محاولة تفادي إجراءات العناية الواجبة" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "مجموعة حسابات تشتري رصيدًا داخل تطبيق بقيمة 50,000 دولار ثم ترسل الهدايا إلى منشئ محتوى واحد، وبعدها يتم سحب العوائد إلى حساب مصرفي باعتبارها دخلًا من المحتوى. ما الاحتمال الذي ينبغي فحصه؟", options: ["نشاط ترفيهي فقط بلا مخاطر", "نقل قيمة وإضفاء مشروعية ظاهرية على الأموال", "تمويل التجارة", "غسل عبر خطابات الضمان"], answer: "نقل قيمة وإضفاء مشروعية ظاهرية على الأموال" },
 
-            /* أسئلة مستوى: صعب جداً */
+            /* ================= مستوى صعب جداً ================= */
             { difficulty: "very_hard", section: "التقييم المعرفي", type: "mcq", q: "شركة تستورد سلعة بسعر أعلى بكثير من السعر السوقي، وتوجد اختلافات بين الفاتورة ووثائق الشحن، والمورد في ولاية قضائية عالية المخاطر. ما أفضل تقييم للحالة؟", options: ["لا يوجد خطر لأن الفاتورة موجودة", "توجد مؤشرات متعددة متوافقة مع TBML وتستوجب الفحص", "خطر احتيال داخلي فقط", "مشكلة تتعلق بسعر الصرف فقط"], answer: "توجد مؤشرات متعددة متوافقة مع TBML وتستوجب الفحص" },
             { difficulty: "very_hard", section: "التقييم المعرفي", type: "mcq", q: "عند تقييم معاملة معقدة، لا توجد إشارة منفردة حاسمة، لكن توجد عدة عوامل مجتمعة: العميل محدود الدخل، المبالغ كبيرة، العمليات متكررة ومجزأة، هناك أطراف متعددة، دول مرتفعة المخاطر، وحركة سريعة للأموال. ما المنهج الأنسب وفق المادة؟", options: ["تجاهل المؤشرات لأن كل واحدة منفردة قد يكون لها تفسير", "تقييم المؤشرات بصورة مجمعة مع مراعاة حجم العملية وتكرارها وطبيعتها والجغرافيا وسلوك العميل", "الاعتماد على مبلغ المعاملة فقط", "رفض العميل مباشرة دون تحليل"], answer: "تقييم المؤشرات بصورة مجمعة مع مراعاة حجم العملية وتكرارها وطبيعتها والجغرافيا وسلوك العميل" },
             { difficulty: "very_hard", section: "التقييم المعرفي", type: "mcq", q: "مؤسسة غير ربحية تستقبل مبالغ صغيرة من مصادر متعددة، ثم تقوم بتحويلها بشكل متكرر إلى جهة مرتبطة بها، مع غياب تفسير واضح للغرض النهائي. ما الذي يجعل الحالة بحاجة إلى تحليل متقدم؟", options: ["الجمع بين تعدد المصادر وتكرار التحويلات وعدم وضوح المستفيد والغرض النهائي", "لأن المؤسسات غير الربحية ممنوعة من استقبال الأموال", "لأن المبالغ صغيرة", "لأن التحويلات داخلية"], answer: "الجمع بين تعدد المصادر وتكرار التحويلات وعدم وضوح المستفيد والغرض النهائي" },
@@ -505,36 +428,13 @@
             { difficulty: "very_hard", section: "التقييم المعرفي", type: "mcq", q: "أثناء مراجعة عميل، تبين أن معاملاته لا تتناسب مع نشاطه، وتوجد أطراف متعددة، واستخدام عدة فروع، ومبالغ مجزأة، وتدفقات دائرية، إضافة إلى ارتباط أحد الأطراف بمنطقة عالية المخاطر. ما المنهج الأكثر دقة؟", options: ["اعتبار كل مؤشر منفصلًا وعدم الربط بينها", "تقييم الصورة الكاملة وربط المؤشرات ببعضها لفهم نمط المعاملة ومصدر الأموال والوجهة", "الاعتماد فقط على حجم آخر معاملة", "رفض جميع المعاملات الدولية تلقائيًا"], answer: "تقييم الصورة الكاملة وربط المؤشرات ببعضها لفهم نمط المعاملة ومصدر الأموال والوجهة" }
         ];
 
-        // خلط المصفوفة
-        function shuffleArray(array) {
-            let curId = array.length;
-            while (0 !== curId) {
-                let randId = Math.floor(Math.random() * curId);
-                curId -= 1;
-                let tmp = array[curId];
-                array[curId] = array[randId];
-                array[randId] = tmp;
-            }
-            return array;
-        }
-
-        // خوارزمية سحب الأسئلة
-        function generateRandomQuiz() {
-            const easyList = shuffleArray(ALL_QUESTIONS.filter(q => q.difficulty === 'easy')).slice(0, 7);
-            const mediumList = shuffleArray(ALL_QUESTIONS.filter(q => q.difficulty === 'medium')).slice(0, 11);
-            const hardList = shuffleArray(ALL_QUESTIONS.filter(q => q.difficulty === 'hard')).slice(0, 5);
-            const veryHardList = shuffleArray(ALL_QUESTIONS.filter(q => q.difficulty === 'very_hard')).slice(0, 2);
-
-            let combined = [...easyList, ...mediumList, ...hardList, ...veryHardList];
-            return shuffleArray(combined);
-        }
-
         const PASSING_SCORE = 60; 
         const CONFIG = {
-            STORAGE_KEY: "KIB_COMP_FINAL_V4",      // تم التحديث لمنع مشاكل الكاش السابقة
-            EXIT_COUNT_KEY: "KIB_COMP_EXIT_V4",    // تم التحديث لمنع مشاكل الكاش السابقة
-            USER_QUESTIONS_KEY: "KIB_COMP_Q_V4",   // تم التحديث لمنع مشاكل الكاش السابقة
-            GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwSS5O1vu0zEn55eBe3VPBbLfUy77Ge993s6p0B_h54WK7KIkjglbGcc8xc1Py-NerY/exec", // ⚠️ ضع رابط السكريبت الجديد هنا
+            // مفاتيح جديدة لضمان تصفير النظام وبدء اختبار جديد تماماً
+            STORAGE_KEY: "KIB_COMPLIANCE_FINAL_V2",      
+            EXIT_COUNT_KEY: "KIB_COMPLIANCE_EXIT_V2",    
+            USER_QUESTIONS_KEY: "KIB_COMPLIANCE_Q_V2",   
+            GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwSS5O1vu0zEn55eBe3VPBbLfUy77Ge993s6p0B_h54WK7KIkjglbGcc8xc1Py-NerY/exec",
             RESET_PASSWORD: "KIB2026",
             ADMINS: {
                 "KIB2026": { name: "إدارة الامتثال", role: "super_admin", email: "compliance@kib.com" },
@@ -643,8 +543,6 @@
                 }
             } catch(error) {
                 console.error("فشل التحقق من قاعدة البيانات، قد يكون السيرفر محظوراً أو الرابط غير صحيح.", error);
-                // ملاحظة: إذا فشل السيرفر، سنسمح له بالدخول كحل احتياطي لعدم تعطيل النظام، 
-                // ويمكنك تغيير هذا السلوك بمنعه تماماً بوضع return; هنا.
             }
 
             // 4. إذا لم يكن مكرراً أو تجاوزنا الفحص، ننتقل للتحذير
@@ -652,6 +550,30 @@
             pendingStart = true;
             document.getElementById('warningModal').classList.remove('hidden');
         });
+
+        // خلط المصفوفة
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        // خوارزمية سحب الأسئلة بدقة
+        function generateRandomQuiz() {
+            const easyList = shuffleArray(ALL_QUESTIONS.filter(q => q.difficulty === 'easy')).slice(0, 7);
+            const mediumList = shuffleArray(ALL_QUESTIONS.filter(q => q.difficulty === 'medium')).slice(0, 11);
+            const hardList = shuffleArray(ALL_QUESTIONS.filter(q => q.difficulty === 'hard')).slice(0, 5);
+            const veryHardList = shuffleArray(ALL_QUESTIONS.filter(q => q.difficulty === 'very_hard')).slice(0, 2);
+
+            let combined = [...easyList, ...mediumList, ...hardList, ...veryHardList];
+            return shuffleArray(combined);
+        }
 
         function confirmStartQuiz() {
             if (!pendingStart) return;
@@ -687,7 +609,6 @@
                 localStorage.removeItem('KIB_EMP_NAME'); 
                 localStorage.removeItem('KIB_FINAL_SCORE');
                 document.getElementById('resetModal').classList.add('hidden');
-                document.getElementById('certificateScreen').classList.add('hidden');
                 document.getElementById('successScreen')?.classList.add('hidden');
                 document.getElementById('failScreen')?.classList.add('hidden');
                 document.getElementById('employeeApp').classList.remove('hidden');
@@ -811,12 +732,21 @@
             const final = Math.round(score);
             const passed = final >= PASSING_SCORE;
 
+            // ================= الحفظ المحلي الصارم (أولاً وقبل كل شيء) =================
+            // يتم الحفظ محلياً فوراً لمنع التحديث (Refresh) للتحايل على النظام
+            localStorage.setItem(CONFIG.STORAGE_KEY, passed ? 'submitted' : 'submitted_failed');
+            localStorage.setItem('KIB_EMP_NAME', employeeInfo.name);
+            localStorage.setItem('KIB_FINAL_SCORE', final.toString());
+            localStorage.setItem(CONFIG.EXIT_COUNT_KEY, exitCount.toString());
+
+            // إظهار واجهة النتيجة مباشرةً
             if (passed) {
                 showSuccessScreen(final);
             } else {
                 showFailScreen(final);
             }
             
+            // ================= الإرسال إلى السيرفر (ثانياً) =================
             const fd = new FormData();
             fd.append('timestamp', new Date().toLocaleString('ar-SA')); 
             fd.append('empId', employeeInfo.id); 
@@ -827,16 +757,13 @@
             fd.append('timeSpent', timeSpent); 
             fd.append('exitCount', exitCount.toString()); 
             fd.append('details', JSON.stringify(quizState)); 
-            fd.append('passed', passed.toString()); // لتسهيل قراءتها لاحقاً إذا أردت
             
             try {
-                await fetch(CONFIG.GOOGLE_SCRIPT_URL, { method: 'POST', body: fd });
-                localStorage.setItem(CONFIG.STORAGE_KEY, passed ? 'submitted' : 'submitted_failed');
-                localStorage.setItem('KIB_EMP_NAME', employeeInfo.name);
-                localStorage.setItem('KIB_FINAL_SCORE', final.toString());
-                localStorage.setItem(CONFIG.EXIT_COUNT_KEY, exitCount.toString());
+                // إرسال البيانات باستخدام mode: 'no-cors' لضمان عبور البيانات رغم حجب المتصفح
+                await fetch(CONFIG.GOOGLE_SCRIPT_URL, { method: 'POST', body: fd, mode: 'no-cors' });
+                console.log('Data successfully dispatched to server.');
             } catch (e) { 
-               console.error('Server error', e);
+               console.error('Network error during dispatch', e);
             }
         }
 
@@ -870,7 +797,6 @@
                 currentAdmin = CONFIG.ADMINS[pw];
                 document.getElementById('adminModal').classList.add('hidden');
                 document.getElementById('employeeApp').classList.add('hidden');
-                document.getElementById('certificateScreen').classList.add('hidden');
                 document.getElementById('failScreen')?.classList.add('hidden');
                 document.getElementById('successScreen')?.classList.add('hidden');
                 document.getElementById('adminDashboard').classList.remove('hidden');
@@ -880,7 +806,7 @@
 
         function updateAdminUI() {
             if (!currentAdmin) return;
-            document.getElementById('adminHeaderTitle').textContent = `إدارة التقييم والشهادات - الامتثال`;
+            document.getElementById('adminHeaderTitle').textContent = `إدارة التقييم والنتائج - الامتثال`;
             const exportBtn = document.getElementById('exportBtn');
             if (exportBtn) exportBtn.style.display = currentAdmin.role !== 'super_admin' ? 'none' : '';
             document.getElementById('adminInfo').classList.remove('hidden');
@@ -890,17 +816,17 @@
 
         async function loadDashboard() {
             const tbody = document.getElementById('responsesTableBody'); if (!tbody) return;
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-gray-500"><i class="fas fa-spinner fa-spin"></i> جاري تحميل البيانات...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 font-bold text-gray-500"><i class="fas fa-spinner fa-spin"></i> جاري تحميل البيانات...</td></tr>';
             try {
                 const res = await fetch(CONFIG.GOOGLE_SCRIPT_URL); const text = await res.text();
                 allServerData = JSON.parse(text); renderAdminData();
-            } catch (e) { tbody.innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-red-500">تعذر الاتصال بالسيرفر.</td></tr>'; }
+            } catch (e) { tbody.innerHTML = '<tr><td colspan="8" class="text-center p-8 font-bold text-red-500">تعذر الاتصال بالسيرفر.</td></tr>'; }
         }
         function refreshDashboard() { loadDashboard(); }
 
         function renderAdminData() {
             if (!allServerData || !allServerData.length) {
-                document.getElementById('responsesTableBody').innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-gray-500">لا توجد بيانات حالياً</td></tr>';
+                document.getElementById('responsesTableBody').innerHTML = '<tr><td colspan="8" class="text-center p-8 font-bold text-gray-500">لا توجد بيانات حالياً</td></tr>';
                 return;
             }
             document.getElementById('totalParticipants').textContent = allServerData.length;
@@ -913,49 +839,13 @@
             
             const tbody = document.getElementById('responsesTableBody'); tbody.innerHTML = '';
             [...allServerData].reverse().forEach((d, idx) => {
-                const actual = allServerData.length - 1 - idx;
                 const passed = parseFloat(d.score) >= PASSING_SCORE;
                 const scoreColor = d.score >= 80 ? 'text-green-600' : (d.score >= 60 ? 'text-yellow-600' : 'text-red-600');
                 
-                const actionCell = passed ? `<button class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-1.5 rounded transition text-xs font-bold" onclick="viewAdminCertificate(${actual})"><i class="fas fa-certificate ml-1"></i> الشهادة</button>` : `<span class="text-gray-400 text-xs">-</span>`;
-
                 const row = document.createElement('tr'); row.className = 'border-b hover:bg-gray-50';
-                row.innerHTML = `<td class="p-3 text-gray-500 text-xs">${(d.timestamp||'-').split(',')[0]}</td><td class="p-3 font-bold text-gray-700">${d.empId||'-'}</td><td class="p-3 font-bold text-[#0369a1]">${d.empName||'-'}</td><td class="p-3 font-semibold text-gray-700 text-xs">${d.department||'-'}</td><td class="p-3 text-center text-xs font-bold text-gray-500">${d.timeSpent||'-'}</td><td class="p-3 text-center font-black text-xl ${scoreColor}">${d.score||0}%</td><td class="p-3 text-center font-bold text-gray-600">${d.exitCount||0}</td><td class="p-3 text-center font-bold text-xs ${passed ? 'text-green-600' : 'text-red-500'}">${passed ? 'مجتاز' : 'غير مجتاز'}</td><td class="p-3 text-center">${actionCell}</td>`;
+                row.innerHTML = `<td class="p-3 text-gray-500 text-xs">${(d.timestamp||'-').split(',')[0]}</td><td class="p-3 font-bold text-gray-700">${d.empId||'-'}</td><td class="p-3 font-bold text-[#0369a1]">${d.empName||'-'}</td><td class="p-3 font-semibold text-gray-700 text-xs">${d.department||'-'}</td><td class="p-3 text-center text-xs font-bold text-gray-500">${d.timeSpent||'-'}</td><td class="p-3 text-center font-black text-xl ${scoreColor}">${d.score||0}%</td><td class="p-3 text-center font-bold text-gray-600">${d.exitCount||0}</td><td class="p-3 text-center font-bold text-xs ${passed ? 'text-green-600' : 'text-red-500'}">${passed ? 'مجتاز' : 'غير مجتاز'}</td>`;
                 tbody.appendChild(row);
             });
-        }
-
-        function viewAdminCertificate(index) {
-            const data = allServerData[index];
-            if (!data) return;
-            
-            document.getElementById('adminDashboard').classList.add('hidden');
-            document.getElementById('certificateScreen').classList.remove('hidden');
-            
-            document.getElementById('finalCertName').textContent = data.empName;
-            
-            let rawDate = data.timestamp ? data.timestamp.split(',')[0] : new Date().toLocaleDateString('ar-SA');
-            document.getElementById('certIssueDate').textContent = rawDate;
-        }
-
-        function closeAdminCertificate() {
-            document.getElementById('certificateScreen').classList.add('hidden');
-            document.getElementById('adminDashboard').classList.remove('hidden');
-        }
-
-        function downloadCertificateDirect() {
-            if (typeof html2canvas === 'undefined') {
-                showToast("مكتبة التحميل غير متوفرة حالياً. حاول الطباعة كـ PDF.");
-                return;
-            }
-            const node = document.getElementById('certificateNode');
-            const name = document.getElementById('finalCertName').textContent || 'شهادة';
-            html2canvas(node, { scale: 2, useCORS: true, backgroundColor: '#ffffff', allowTaint: true }).then(canvas => {
-                const imgData = canvas.toDataURL('image/png');
-                const safeName = name.toString().replace(/[\\/:*?"<>|]+/g, '_').trim();
-                const link = document.createElement('a'); link.download = `شهادة_امتثال_${safeName}.png`; link.href = imgData;
-                document.body.appendChild(link); link.click(); link.remove();
-            }).catch(err => { showToast("حدث خطأ أثناء تحميل الصورة. جرب خيار الطباعة."); });
         }
 
         function exportToExcel() {
