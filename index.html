@@ -944,7 +944,7 @@
             document.getElementById('viewModal').classList.add('hidden');
         }
 
-        // خوارزمية تصدير الإكسل المحسنة
+        // خوارزمية التصدير الذكية والمستقلة كلياً (بدون مكتبات خارجية لتخطي حظر الشبكات)
         function exportToExcel() {
             if (!allServerData || allServerData.length === 0) {
                 alert('لا توجد بيانات للتصدير');
@@ -952,7 +952,7 @@
             }
 
             try {
-                // تحديد أقصى عدد من الأسئلة في كل السجلات لتوحيد أعمدة الإكسل
+                // 1. تحديد أقصى عدد من الأسئلة لتوحيد الأعمدة
                 let maxQuestions = 0;
                 allServerData.forEach(d => {
                     try {
@@ -961,63 +961,113 @@
                     } catch(e){}
                 });
 
-                // بناء كائن البيانات للإكسل
-                const excelData = allServerData.map(d => {
-                    // البيانات الأساسية للموظف
-                    let row = {
-                        'التاريخ': d.timestamp || '-',
-                        'الرقم الوظيفي': d.empId || '-',
-                        'اسم الموظف': d.empName || '-',
-                        'الإدارة/الفرع': d.department || '-',
-                        'المسمى الوظيفي': d.jobTitle || '-',
-                        'النتيجة %': (d.score || '0') + '%',
-                        'الوقت المستغرق': d.timeSpent || '-',
-                        'مخالفات الخروج': d.exitCount || '0',
-                        'الحالة': parseFloat(d.score || 0) >= 60 ? 'مجتاز' : 'غير مجتاز'
-                    };
+                // 2. بناء هيكل XML/HTML ذكي يفهمه الإكسل كملف أصلي متكامل
+                let tableHTML = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="UTF-8">
+                    <!-- كود برمجي دقيق لإجبار الإكسل على فتح الشيت من اليمين لليسار -->
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <x:ExcelWorkbook>
+                            <x:ExcelWorksheets>
+                                <x:ExcelWorksheet>
+                                    <x:Name>نتائج الامتثال</x:Name>
+                                    <x:WorksheetOptions>
+                                        <x:DisplayRightToLeft/>
+                                    </x:WorksheetOptions>
+                                </x:ExcelWorksheet>
+                            </x:ExcelWorksheets>
+                        </x:ExcelWorkbook>
+                    </xml>
+                    <![endif]-->
+                    <style>
+                        table { border-collapse: collapse; width: 100%; direction: rtl; font-family: 'Segoe UI', Tahoma, sans-serif; }
+                        th { background-color: #0369a1; color: white; font-weight: bold; border: 1px solid #a3a3a3; padding: 12px; text-align: center; font-size: 14px; }
+                        td { border: 1px solid #cccccc; padding: 10px; text-align: center; vertical-align: middle; font-size: 13px; }
+                        .correct { color: #059669; font-weight: bold; }
+                        .wrong { color: #DC2626; font-weight: bold; }
+                        .highlight { font-weight: bold; color: #1e293b; background-color: #f8fafc; }
+                    </style>
+                </head>
+                <body dir="rtl">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>الرقم الوظيفي</th>
+                                <th>اسم الموظف</th>
+                                <th>الإدارة/الفرع</th>
+                                <th>المسمى الوظيفي</th>
+                                <th>النتيجة %</th>
+                                <th>الوقت المستغرق</th>
+                                <th>مخالفات الخروج</th>
+                                <th>الحالة</th>`;
+                
+                // إضافة عناوين الأسئلة ديناميكياً
+                for(let i = 1; i <= maxQuestions; i++) {
+                    tableHTML += `<th>سؤال ${i}</th><th>إجابة الموظف ${i}</th><th>التقييم ${i}</th>`;
+                }
+                
+                tableHTML += `</tr></thead><tbody>`;
+
+                // 3. تعبئة البيانات بصفوف الإكسل المنسقة
+                allServerData.forEach(d => {
+                    let passed = parseFloat(d.score || 0) >= 60 ? 'مجتاز' : 'غير مجتاز';
+                    // mso-number-format:'\@'; تمنع الإكسل من حذف الأصفار أو تحويل الرقم الوظيفي لمعادلة
+                    let rowHtml = `<tr>
+                        <td>${(d.timestamp || '-').split(',')[0]}</td>
+                        <td style="mso-number-format:'\\@'; font-weight: bold; font-size: 15px;">${d.empId || '-'}</td>
+                        <td class="highlight" style="font-size: 14px;">${d.empName || '-'}</td>
+                        <td>${d.department || '-'}</td>
+                        <td>${d.jobTitle || '-'}</td>
+                        <td style="font-weight: black; font-size: 16px; color: ${parseFloat(d.score)>=60 ? '#059669' : '#DC2626'};">${(d.score || '0') + '%'}</td>
+                        <td>${d.timeSpent || '-'}</td>
+                        <td style="font-weight: bold;">${d.exitCount || '0'}</td>
+                        <td class="${passed === 'مجتاز' ? 'correct' : 'wrong'}">${passed}</td>`;
 
                     let detailsArray = [];
                     try {
                         detailsArray = typeof d.details === 'string' ? JSON.parse(d.details || '[]') : (d.details || []);
                     } catch(e){}
 
-                    // تعبئة إجابات الأسئلة في الأعمدة التالية
                     for(let i = 0; i < maxQuestions; i++) {
                         if (i < detailsArray.length) {
                             let a = detailsArray[i];
-                            row[`سؤال ${i+1}`] = a.questionText || '-';
-                            row[`إجابة الموظف ${i+1}`] = a.userAnswer || 'لم يُجب';
-                            
                             let isCorrect = false;
                             if (a.userAnswer && a.correctAnswer) {
                                 isCorrect = a.userAnswer.toString().replace(/\s+/g, ' ').trim() === a.correctAnswer.toString().replace(/\s+/g, ' ').trim();
                             }
-                            row[`التقييم ${i+1}`] = isCorrect ? 'صحيحة' : 'خاطئة';
+                            let evalText = isCorrect ? 'صحيح' : 'خاطئ';
+                            let evalClass = isCorrect ? 'correct' : 'wrong';
+
+                            rowHtml += `<td style="text-align: right;">${a.questionText || '-'}</td>
+                                        <td style="color:#0369a1; font-weight:bold; text-align: right;">${a.userAnswer || 'لم يُجب'}</td>
+                                        <td class="${evalClass}">${evalText}</td>`;
                         } else {
-                            row[`سؤال ${i+1}`] = '-';
-                            row[`إجابة الموظف ${i+1}`] = '-';
-                            row[`التقييم ${i+1}`] = '-';
+                            rowHtml += `<td>-</td><td>-</td><td>-</td>`;
                         }
                     }
-                    return row;
+                    rowHtml += `</tr>`;
+                    tableHTML += rowHtml;
                 });
 
-                // تحويل البيانات لملف إكسل واستخراجها
-                const ws = XLSX.utils.json_to_sheet(excelData);
-                
-                // جعل الشيت من اليمين لليسار (RTL)
-                if(!ws['!cols']) ws['!cols'] = [];
-                ws['!dir'] = 'rtl';
+                tableHTML += `</tbody></table></body></html>`;
 
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, "نتائج الامتثال");
-                
-                // تنزيل الملف
-                XLSX.writeFile(wb, `نتائج_تقييم_الامتثال_${new Date().getTime()}.xlsx`);
+                // 4. تصدير الملف كـ Excel حقيقي (بصيغة xls) عبر المتصفح مباشرة
+                // إضافة \ufeff لدعم اللغة العربية (BOM)
+                const blob = new Blob(['\ufeff' + tableHTML], { type: 'application/vnd.ms-excel;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `نتائج_تقييم_الامتثال_${new Date().getTime()}.xls`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
 
             } catch (err) {
                 console.error("Export Error Details:", err);
-                alert("تفاصيل الخطأ: " + err.message);
+                alert("حدث خطأ أثناء التصدير. يرجى المحاولة لاحقاً.");
             }
         }
     </script>
