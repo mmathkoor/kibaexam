@@ -919,80 +919,96 @@
             }
 
             try {
-                // تجهيز البيانات
-                const exportData = allServerData.map(d => {
-                    const row = {
-                        'التاريخ': d.timestamp || '-',
-                        'الرقم الوظيفي': d.empId || '-',
-                        'اسم الموظف': d.empName || '-',
-                        'الإدارة/الفرع': d.department || '-',
-                        'المسمى الوظيفي': d.jobTitle || '-',
-                        'النتيجة %': d.score || '0',
-                        'الوقت المستغرق': d.timeSpent || '-',
-                        'مخالفات الخروج': d.exitCount || '0',
-                        'الحالة': (parseFloat(d.score || 0) >= PASSING_SCORE) ? 'مجتاز' : 'غير مجتاز'
-                    };
-
+                let csvContent = "\uFEFF"; // تعريف ترميز اللغة العربية UTF-8 لمنع ظهور الرموز الغريبة
+                
+                // 1. تحديد أقصى عدد من الأسئلة في كل السجلات لتوحيد أعمدة الإكسل
+                let maxQuestions = 0;
+                allServerData.forEach(d => {
                     try {
-                        let detailsArray = [];
-                        if (typeof d.details === 'string') {
-                            detailsArray = JSON.parse(d.details || '[]');
-                        } else if (Array.isArray(d.details)) {
-                            detailsArray = d.details;
-                        }
+                        let details = typeof d.details === 'string' ? JSON.parse(d.details || '[]') : (d.details || []);
+                        if (details.length > maxQuestions) maxQuestions = details.length;
+                    } catch(e){}
+                });
 
-                        detailsArray.forEach((a, i) => {
-                            row[`سؤال ${i+1}`] = a.questionText || '-';
-                            row[`إجابة ${i+1}`] = a.userAnswer || '-';
+                // 2. بناء العناوين الرئيسية للأعمدة
+                let headers = [
+                    'التاريخ', 'الرقم الوظيفي', 'اسم الموظف', 'الإدارة/الفرع', 
+                    'المسمى الوظيفي', 'النتيجة %', 'الوقت المستغرق', 
+                    'مخالفات الخروج', 'الحالة'
+                ];
+                
+                // إضافة عناوين الأسئلة ديناميكياً
+                for(let i = 1; i <= maxQuestions; i++) {
+                    headers.push(`سؤال ${i}`);
+                    headers.push(`إجابة الموظف ${i}`);
+                    headers.push(`التقييم ${i}`);
+                }
+
+                // تحويل العناوين إلى نص
+                csvContent += headers.map(h => `"${h}"`).join(",") + "\n";
+
+                // 3. تعبئة البيانات لكل موظف
+                allServerData.forEach(d => {
+                    let row = [];
+                    row.push(d.timestamp || '-');
+                    row.push(d.empId || '-');
+                    row.push(d.empName || '-');
+                    row.push(d.department || '-');
+                    row.push(d.jobTitle || '-');
+                    row.push((d.score || '0') + '%');
+                    row.push(d.timeSpent || '-');
+                    row.push(d.exitCount || '0');
+                    
+                    const scoreNum = parseFloat(d.score || 0);
+                    row.push(scoreNum >= 60 ? 'مجتاز' : 'غير مجتاز');
+
+                    let detailsArray = [];
+                    try {
+                        detailsArray = typeof d.details === 'string' ? JSON.parse(d.details || '[]') : (d.details || []);
+                    } catch(e){}
+
+                    // تعبئة إجابات الأسئلة أو وضع شرطة (-) إذا كان السجل قديماً وناقصاً
+                    for(let i = 0; i < maxQuestions; i++) {
+                        if (i < detailsArray.length) {
+                            let a = detailsArray[i];
+                            row.push(a.questionText || '-');
+                            row.push(a.userAnswer || 'لم يُجب');
+                            
                             let isCorrect = false;
                             if (a.userAnswer && a.correctAnswer) {
                                 isCorrect = a.userAnswer.toString().replace(/\s+/g, ' ').trim() === a.correctAnswer.toString().replace(/\s+/g, ' ').trim();
                             }
-                            row[`النتيجة ${i+1}`] = isCorrect ? 'صحيحة' : 'خاطئة';
-                        });
-                    } catch (e) {
-                        console.error("تجاوز خطأ في قراءة التفاصيل", e);
+                            row.push(isCorrect ? 'صحيحة' : 'خاطئة');
+                        } else {
+                            row.push('-'); row.push('-'); row.push('-');
+                        }
                     }
-                    return row;
+
+                    // تنظيف النصوص من المسافات وعلامات التنصيص التي تكسر ملفات الإكسل
+                    csvContent += row.map(cell => {
+                        let safeCell = cell === null || cell === undefined ? "" : cell.toString();
+                        safeCell = safeCell.replace(/"/g, '""'); // الهروب من علامات التنصيص
+                        safeCell = safeCell.replace(/(\r\n|\n|\r)/gm, " "); // إزالة المسافات العمودية
+                        return `"${safeCell}"`;
+                    }).join(",") + "\n";
                 });
 
-                // 1. محاولة التصدير باستخدام مكتبة XLSX إذا كانت محملة
-                if (typeof XLSX !== 'undefined') {
-                    const ws = XLSX.utils.json_to_sheet(exportData);
-                    const wb = XLSX.utils.book_new();
-                    XLSX.utils.book_append_sheet(wb, ws, 'النتائج');
-                    XLSX.writeFile(wb, 'KIB_Compliance_Results.xlsx');
-                    return;
-                }
-
-                // 2. خيار بديل جذري ومضمون (طريقة CSV) يعمل على جميع الأجهزة وبدون مكتبات خارجية
-                let csvContent = "\uFEFF"; // تعريف ترميز اللغة العربية UTF-8
-                const headers = Object.keys(exportData[0]);
-                csvContent += headers.map(h => `"${h}"`).join(",") + "\n";
-
-                exportData.forEach(obj => {
-                    const row = headers.map(header => {
-                        let cell = obj[header] === null || obj[header] === undefined ? "" : obj[header];
-                        cell = cell.toString().replace(/"/g, '""'); // الهروب من علامات التنصيص
-                        return `"${cell}"`;
-                    });
-                    csvContent += row.join(",") + "\n";
-                });
-
+                // 4. تفعيل التحميل الإجباري للملف
                 const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement("a");
                 link.setAttribute("href", url);
-                link.setAttribute("download", "KIB_Compliance_Results.csv");
-                link.style.display = "none";
+                link.setAttribute("download", `KIB_Compliance_Results_${new Date().getTime()}.csv`);
+                
+                // إضافة العنصر مؤقتاً للنقر عليه ثم حذفه
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
                 URL.revokeObjectURL(url);
 
             } catch (err) {
-                console.error("Export Error:", err);
-                alert("حدث خطأ أثناء التصدير. تأكد من أنك تستخدم متصفح كروم أو إيدج ولا تمنع التنزيلات.");
+                console.error("Export Error Details:", err);
+                alert("تفاصيل الخطأ: " + err.message);
             }
         }
     </script>
