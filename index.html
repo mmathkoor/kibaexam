@@ -32,9 +32,9 @@
         .exit-warning-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(3, 105, 161, 0.95); z-index: 99999; display: flex; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
         .exit-warning-overlay.hidden { display: none; }
 
-        /* طبقة التحقق من البيانات (Loading) */
-        .verify-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 60; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .verify-overlay.hidden { display: none; }
+        /* طبقة التحقق من البيانات (Loading) لمنع التكرار */
+        .verify-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .verify-overlay.hidden { display: none !important; }
 
         /* تنسيقات الشهادة (للمشرف فقط) */
         #certificateScreen { display: flex; align-items: center; justify-content: center; background: #e5e7eb; min-height: 100vh; padding: 20px; }
@@ -61,11 +61,11 @@
 </head>
 <body>
 
-    <!-- طبقة جاري التحقق من البيانات لمنع التكرار -->
-    <div id="verifyOverlay" class="verify-overlay hidden">
-        <i class="fas fa-circle-notch fa-spin text-5xl text-[#0369a1] mb-4"></i>
-        <h2 class="text-xl font-bold text-gray-800">جاري التحقق من السجلات...</h2>
-        <p class="text-sm text-gray-500 mt-2">يرجى الانتظار للتأكد من بياناتك</p>
+    <!-- طبقة جاري التحقق من البيانات لمنع التكرار من السيرفر -->
+    <div id="verifyOverlay" class="verify-overlay hidden no-print">
+        <i class="fas fa-circle-notch fa-spin text-6xl text-[#0369a1] mb-6"></i>
+        <h2 class="text-2xl font-black text-gray-800 mb-2">جاري التحقق من السجلات...</h2>
+        <p class="text-base text-gray-500 font-semibold">يرجى الانتظار للتأكد من عدم وجود اختبار سابق باسمك أو رقمك الوظيفي</p>
     </div>
 
     <!-- طبقة تحذير الخروج -->
@@ -182,7 +182,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-bold mb-2 text-gray-700">اسم الموظف (رباعي) *</label>
-                            <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#0369a1] outline-none transition" placeholder="مثال: محمد أحمد محمد">
+                            <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#0369a1] outline-none transition" placeholder="مثال: محمد أحمد البكيلي">
                             <p id="empNameError" class="text-red-500 text-xs mt-1 hidden">يجب إدخال الاسم الرباعي (3 كلمات على الأقل)</p>
                         </div>
                     </div>
@@ -531,10 +531,10 @@
 
         const PASSING_SCORE = 60; 
         const CONFIG = {
-            STORAGE_KEY: "KIB_COMP_FINAL_V1",
-            EXIT_COUNT_KEY: "KIB_COMP_EXIT_V1",
-            USER_QUESTIONS_KEY: "KIB_COMP_QUESTIONS_V1",
-            GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwSS5O1vu0zEn55eBe3VPBbLfUy77Ge993s6p0B_h54WK7KIkjglbGcc8xc1Py-NerY/exec", 
+            STORAGE_KEY: "KIB_COMP_FINAL_V4",      // تم التحديث لمنع مشاكل الكاش السابقة
+            EXIT_COUNT_KEY: "KIB_COMP_EXIT_V4",    // تم التحديث لمنع مشاكل الكاش السابقة
+            USER_QUESTIONS_KEY: "KIB_COMP_Q_V4",   // تم التحديث لمنع مشاكل الكاش السابقة
+            GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwy4o_6Pz3iP54O9w0K0L2z1803dG_8v44S4iZ7w4iH07Z5V2GqG5L5H6n36G4v0G4r/exec", // ⚠️ ضع رابط السكريبت الجديد هنا
             RESET_PASSWORD: "KIB2026",
             ADMINS: {
                 "KIB2026": { name: "إدارة الامتثال", role: "super_admin", email: "compliance@kib.com" },
@@ -593,7 +593,7 @@
             if (isQuizActive && quizState[currentQuestion]?.status !== 'locked') startTimer();
         }
 
-        // ==================== التحقق من البيانات لمنع التكرار ====================
+        // ==================== التحقق من البيانات لمنع التكرار عبر السيرفر ====================
         document.getElementById('introForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const nameInput = document.getElementById('empName');
@@ -614,28 +614,41 @@
                 jobTitle: document.getElementById('empJobTitle').value.trim()
             };
             
-            // إظهار شاشة جاري التحقق
-            document.getElementById('verifyOverlay').classList.remove('hidden');
+            // 1. إظهار شاشة جاري التحقق
+            const verifyOverlay = document.getElementById('verifyOverlay');
+            verifyOverlay.classList.remove('hidden');
 
             try {
+                // 2. سحب البيانات من السيرفر باستخدام GET
                 const res = await fetch(CONFIG.GOOGLE_SCRIPT_URL);
                 const text = await res.text();
                 const data = JSON.parse(text);
 
-                // التحقق من وجود الرقم الوظيفي أو الاسم مسبقاً
-                const isDuplicate = data.some(d => d.empId === employeeInfo.id || d.empName === employeeInfo.name);
+                // 3. التحقق من وجود الرقم الوظيفي أو الاسم مسبقاً
+                const isDuplicate = data.some(d => {
+                    // تجاهل الحقول الفارغة، ومقارنة النصوص بعد إزالة المسافات
+                    const serverId = (d.empId || "").toString().trim();
+                    const serverName = (d.empName || "").toString().trim();
+                    const currentId = employeeInfo.id.toString().trim();
+                    const currentName = employeeInfo.name.toString().trim();
+
+                    return (serverId !== "" && serverId === currentId) || 
+                           (serverName !== "" && serverName === currentName);
+                });
 
                 if(isDuplicate) {
-                    document.getElementById('verifyOverlay').classList.add('hidden');
-                    showToast("عذراً، هذا الرقم الوظيفي أو الاسم مسجل مسبقاً في النظام. لا يمكنك إعادة الاختبار.");
-                    return; // إيقاف العملية هنا
+                    verifyOverlay.classList.add('hidden');
+                    alert("⚠️ عذراً، هذا الرقم الوظيفي أو الاسم مسجل مسبقاً في قاعدة البيانات. لقد قمت بإجراء الاختبار من قبل ولا يُسمح بإعادته.");
+                    return; // إيقاف الدخول تماماً
                 }
             } catch(error) {
-                console.error("فشل التحقق من البيانات، سيتم السماح بالدخول مؤقتاً لتجنب تعطل النظام", error);
+                console.error("فشل التحقق من قاعدة البيانات، قد يكون السيرفر محظوراً أو الرابط غير صحيح.", error);
+                // ملاحظة: إذا فشل السيرفر، سنسمح له بالدخول كحل احتياطي لعدم تعطيل النظام، 
+                // ويمكنك تغيير هذا السلوك بمنعه تماماً بوضع return; هنا.
             }
 
-            // إخفاء شاشة التحقق والمتابعة للتحذير
-            document.getElementById('verifyOverlay').classList.add('hidden');
+            // 4. إذا لم يكن مكرراً أو تجاوزنا الفحص، ننتقل للتحذير
+            verifyOverlay.classList.add('hidden');
             pendingStart = true;
             document.getElementById('warningModal').classList.remove('hidden');
         });
@@ -814,7 +827,7 @@
             fd.append('timeSpent', timeSpent); 
             fd.append('exitCount', exitCount.toString()); 
             fd.append('details', JSON.stringify(quizState)); 
-            fd.append('passed', passed.toString());
+            fd.append('passed', passed.toString()); // لتسهيل قراءتها لاحقاً إذا أردت
             
             try {
                 await fetch(CONFIG.GOOGLE_SCRIPT_URL, { method: 'POST', body: fd });
