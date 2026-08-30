@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>التقييم المعرفي - إدارة الامتثال | KIB</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- تم تغيير سيرفر الأيقونات إلى jsdelivr الأسرع والأكثر استقراراً وتحديثه لآخر إصدار -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -48,7 +47,6 @@
     </style>
 </head>
 <body>
-
     <div id="verifyOverlay" class="verify-overlay hidden no-print">
         <i class="fas fa-circle-notch fa-spin text-6xl text-[#0369a1] mb-6"></i>
         <h2 class="text-2xl font-black text-gray-800 mb-2">جاري التحقق من السجلات...</h2>
@@ -321,7 +319,7 @@
     </div>
 
     <script>
-        // بنك الأسئلة الشامل (63 سؤال) مقسم حسب الصعوبة
+        // بنك الأسئلة الشامل 
         const ALL_QUESTIONS = [
             /* ================= مستوى سهل ================= */
             { difficulty: "easy", section: "التقييم المعرفي", type: "mcq", q: "ما الغرض من إخفاء الأثر في غسل الأموال؟", options: ["زيادة عدد المعاملات", "قطع الصلة بين الجريمة والأموال الناتجة عنها", "زيادة سرعة التسوية", "تحسين جودة المستندات"], answer: "قطع الصلة بين الجريمة والأموال الناتجة عنها" },
@@ -426,7 +424,7 @@
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يقدم هدية لموظف البنك مباشرة قبل تنفيذ معاملة حساسة، دون وجود سبب مشروع لذلك. ما المؤشر هنا؟", options: ["محاولة التأثير على الموظف لتسهيل المعاملة", "مؤشر على انخفاض المخاطر", "إجراء اعتيادي من العميل", "مؤشر على ارتفاع السيولة"], answer: "محاولة التأثير على الموظف لتسهيل المعاملة" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يريد فتح حساب إلكتروني لكنه لا يقدم المعلومات المطلوبة لاستكمال التعرف عليه. ما المؤشر؟", options: ["صعوبة أو رفض استكمال متطلبات التعرف على العميل عن بُعد", "انخفاض المخاطر", "نشاط طبيعي", "مؤشر خاص بالتجارة"], answer: "صعوبة أو رفض استكمال متطلبات التعرف على العميل عن بُعد" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "شركة تجري معاملات دولية بشكل متكرر رغم عدم وجود مبرر تجاري واضح لطبيعة نشاطها. ما المؤشر الأبرز؟", options: ["استخدام حوالات دولية لا تتناسب مع نشاط الشركة", "مؤشر تضخم", "مؤشر متعلق بالعملة", "مؤشر يتعلق بقاعدة الذهب"], answer: "استخدام حوالات دولية لا تتناسب مع نشاط الشركة" },
-            { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يوزع إيداعات نقدية كبيرة عبر عدة فروع ويستخدم أشخاصًا مختلفين لإيداعها خلال فترة قصيرة، وكل مبلغ منفرد يبدو منخفضًا. ما الاست الاستنتاج الأكثر دقة؟", options: ["العمليات مستقلة بالضرورة", "قد يكون ذلك تجزئة بهدف تجنب الرقابة", "هذا دليل على نشاط تجاري ناجح", "لا توجد مخاطرة لأن كل عملية صغيرة"], answer: "قد يكون ذلك تجزئة بهدف تجنب الرقابة" },
+            { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يوزع إيداعات نقدية كبيرة عبر عدة فروع ويستخدم أشخاصًا مختلفين لإيداعها خلال فترة قصيرة، وكل مبلغ منفرد يبدو منخفضًا. ما الاستنتاج الأكثر دقة؟", options: ["العمليات مستقلة بالضرورة", "قد يكون ذلك تجزئة بهدف تجنب الرقابة", "هذا دليل على نشاط تجاري ناجح", "لا توجد مخاطرة لأن كل عملية صغيرة"], answer: "قد يكون ذلك تجزئة بهدف تجنب الرقابة" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "حساب منشئ محتوى حديث الإنشاء يستقبل هدايا رقمية ضخمة من عدة حسابات، ثم يسحب عوائد مرتفعة رغم عدم وجود متابعين أو تفاعل منطقي. ما مؤشر الاشتباه الأقوى؟", options: ["انخفاض الرسوم", "عدم تناسب العوائد مع مستوى التفاعل الحقيقي", "وجود حساب مصرفي", "استخدام الإنترنت"], answer: "عدم تناسب العوائد مع مستوى التفاعل الحقيقي" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يزعم أنه يقوم بمهمة أمنية سرية ويطلب إعفاءه من تقديم البيانات المطلوبة. كيف يصنف هذا السلوك؟", options: ["مؤشر متعلق بالهوية فقط", "مؤشر سلوكي يستوجب الانتباه", "مؤشر ائتماني", "مؤشر خاص بالتجارة"], answer: "مؤشر سلوكي يستوجب الانتباه" },
             { difficulty: "hard", section: "التقييم المعرفي", type: "mcq", q: "عميل يطلب تحويل الأموال إلى الخارج، ثم يطلب إصدار شيكات بقيمة الحوالة وإرسالها بالبريد إلى شخص لا يملك حسابًا لدى البنك. ما سبب الاشتباه الأساسي؟", options: ["وجود تعليمات غير معتادة لتحويل قيمة الحوالة إلى شيكات وإرسالها لطرف غير صاحب حساب", "لأن الشيكات لا تستخدم في البنوك", "لأن التحويل خارجي", "لأن العميل يملك حسابًا"], answer: "وجود تعليمات غير معتادة لتحويل قيمة الحوالة إلى شيكات وإرسالها لطرف غير صاحب حساب" },
@@ -915,62 +913,86 @@
         }
 
         function exportToExcel() {
-            if (!allServerData || !allServerData.length) {
+            if (!allServerData || allServerData.length === 0) {
                 alert('لا توجد بيانات للتصدير');
                 return;
             }
-            
-            const exportData = allServerData.map(d => {
-                const row = { 
-                    'التاريخ': d.timestamp || '-', 
-                    'الرقم الوظيفي': d.empId || '-', 
-                    'اسم الموظف': d.empName || '-', 
-                    'الإدارة/الفرع': d.department || '-', 
-                    'المسمى الوظيفي': d.jobTitle || '-',
-                    'النتيجة %': d.score || '0', 
-                    'الوقت المستغرق': d.timeSpent || '-', 
-                    'مخالفات الخروج': d.exitCount || '0',
-                    'الحالة': (parseFloat(d.score || 0) >= PASSING_SCORE) ? 'مجتاز' : 'غير مجتاز'
-                };
-                
-                try { 
-                    let detailsArray = [];
-                    // التحقق الآمن من نوع البيانات لتجنب توقف الكود
-                    if (typeof d.details === 'string') {
-                        detailsArray = JSON.parse(d.details || '[]');
-                    } else if (Array.isArray(d.details)) {
-                        detailsArray = d.details;
-                    }
 
-                    detailsArray.forEach((a, i) => { 
-                        row[`سؤال ${i+1}`] = a.questionText || '-';
-                        row[`إجابة ${i+1}`] = a.userAnswer || '-';
-                        
-                        let isCorrect = false;
-                        if (a.userAnswer && a.correctAnswer) {
-                            isCorrect = a.userAnswer.toString().replace(/\s+/g, ' ').trim() === a.correctAnswer.toString().replace(/\s+/g, ' ').trim();
-                        }
-                        row[`النتيجة ${i+1}`] = isCorrect ? 'صحيحة' : 'خاطئة';
-                    }); 
-                } catch (e) {
-                    console.error("تجاوز خطأ في قراءة التفاصيل", e);
-                }
-                return row;
-            });
-            
             try {
-                const ws = XLSX.utils.json_to_sheet(exportData); 
-                const wb = XLSX.utils.book_new(); 
-                XLSX.utils.book_append_sheet(wb, ws, 'النتائج');
-                
-                // توليد اسم ملف إنجليزي/رقمي آمن لتجنب رفض المتصفح أو الويندوز
-                const dateStr = new Date().toISOString().split('T')[0];
-                const fileName = `KIB_Compliance_Results_${dateStr}.xlsx`;
-                
-                XLSX.writeFile(wb, fileName);
+                // تجهيز البيانات
+                const exportData = allServerData.map(d => {
+                    const row = {
+                        'التاريخ': d.timestamp || '-',
+                        'الرقم الوظيفي': d.empId || '-',
+                        'اسم الموظف': d.empName || '-',
+                        'الإدارة/الفرع': d.department || '-',
+                        'المسمى الوظيفي': d.jobTitle || '-',
+                        'النتيجة %': d.score || '0',
+                        'الوقت المستغرق': d.timeSpent || '-',
+                        'مخالفات الخروج': d.exitCount || '0',
+                        'الحالة': (parseFloat(d.score || 0) >= PASSING_SCORE) ? 'مجتاز' : 'غير مجتاز'
+                    };
+
+                    try {
+                        let detailsArray = [];
+                        if (typeof d.details === 'string') {
+                            detailsArray = JSON.parse(d.details || '[]');
+                        } else if (Array.isArray(d.details)) {
+                            detailsArray = d.details;
+                        }
+
+                        detailsArray.forEach((a, i) => {
+                            row[`سؤال ${i+1}`] = a.questionText || '-';
+                            row[`إجابة ${i+1}`] = a.userAnswer || '-';
+                            let isCorrect = false;
+                            if (a.userAnswer && a.correctAnswer) {
+                                isCorrect = a.userAnswer.toString().replace(/\s+/g, ' ').trim() === a.correctAnswer.toString().replace(/\s+/g, ' ').trim();
+                            }
+                            row[`النتيجة ${i+1}`] = isCorrect ? 'صحيحة' : 'خاطئة';
+                        });
+                    } catch (e) {
+                        console.error("تجاوز خطأ في قراءة التفاصيل", e);
+                    }
+                    return row;
+                });
+
+                // 1. محاولة التصدير باستخدام مكتبة XLSX إذا كانت محملة
+                if (typeof XLSX !== 'undefined') {
+                    const ws = XLSX.utils.json_to_sheet(exportData);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, 'النتائج');
+                    XLSX.writeFile(wb, 'KIB_Compliance_Results.xlsx');
+                    return;
+                }
+
+                // 2. خيار بديل جذري ومضمون (طريقة CSV) يعمل على جميع الأجهزة وبدون مكتبات خارجية
+                let csvContent = "\uFEFF"; // تعريف ترميز اللغة العربية UTF-8
+                const headers = Object.keys(exportData[0]);
+                csvContent += headers.map(h => `"${h}"`).join(",") + "\n";
+
+                exportData.forEach(obj => {
+                    const row = headers.map(header => {
+                        let cell = obj[header] === null || obj[header] === undefined ? "" : obj[header];
+                        cell = cell.toString().replace(/"/g, '""'); // الهروب من علامات التنصيص
+                        return `"${cell}"`;
+                    });
+                    csvContent += row.join(",") + "\n";
+                });
+
+                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement("a");
+                link.setAttribute("href", url);
+                link.setAttribute("download", "KIB_Compliance_Results.csv");
+                link.style.display = "none";
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
             } catch (err) {
-                console.error("Excel Export Error: ", err);
-                alert("حدث خطأ أثناء تصدير الملف. يرجى المحاولة لاحقاً أو من متصفح آخر.");
+                console.error("Export Error:", err);
+                alert("حدث خطأ أثناء التصدير. تأكد من أنك تستخدم متصفح كروم أو إيدج ولا تمنع التنزيلات.");
             }
         }
     </script>
