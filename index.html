@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>التقييم المعرفي - إدارة الامتثال | KIB</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- تم تغيير سيرفر الأيقونات إلى jsdelivr الأسرع والأكثر استقراراً وتحديثه لآخر إصدار -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
@@ -182,7 +183,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-bold mb-2 text-gray-700">اسم الموظف (رباعي) *</label>
-                            <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#0369a1] outline-none transition" placeholder="مثال: محمد أحمد البكيلي">
+                            <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#0369a1] outline-none transition" placeholder="مثال: محمد أحمد محمد">
                             <p id="empNameError" class="text-red-500 text-xs mt-1 hidden">يجب إدخال الاسم الرباعي (3 كلمات على الأقل)</p>
                         </div>
                     </div>
