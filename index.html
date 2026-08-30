@@ -7,6 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <!-- مكتبة تصدير الإكسل -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * { font-family: 'Cairo', sans-serif; }
@@ -53,6 +54,18 @@
         <p class="text-base text-gray-500 font-semibold">يرجى الانتظار للتأكد من عدم وجود اختبار سابق باسمك أو رقمك الوظيفي</p>
     </div>
 
+    <!-- نافذة تخطي المشرف للموظف المكرر -->
+    <div id="duplicateModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl border-t-4 border-red-500">
+            <h3 class="text-xl font-black text-red-600 mb-2 text-center">الموظف مسجل مسبقاً!</h3>
+            <p class="text-sm text-gray-600 mb-4 text-center font-semibold">هذا الرقم الوظيفي أو الاسم اختبر من قبل ولا يُسمح له بالإعادة. <br><br>للمشرفين: أدخل كلمة المرور للسماح للموظف بإعادة الاختبار.</p>
+            <input type="password" id="overridePassInput" class="w-full px-4 py-3 border-2 rounded-xl text-center text-lg mb-3 focus:outline-none focus:border-red-500" placeholder="كلمة مرور المشرف">
+            <button onclick="confirmOverride()" class="w-full bg-red-500 hover:bg-red-600 text-white font-black py-3 rounded-xl mb-2 transition">تخطي الحظر وبدء الاختبار</button>
+            <button onclick="closeDuplicateModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-xl transition">إلغاء</button>
+            <div id="overrideError" class="text-red-600 text-xs text-center font-bold mt-2 hidden">كلمة المرور غير صحيحة</div>
+        </div>
+    </div>
+
     <div id="exitWarningOverlay" class="exit-warning-overlay hidden">
         <div>
             <i class="fas fa-exclamation-triangle text-6xl mb-4" style="color: #F5B335;"></i>
@@ -78,7 +91,7 @@
                 </div>
             </div>
             <div class="flex gap-2">
-                <button onclick="showResetModal()" class="flex-shrink-0 bg-white/10 hover:bg-white/20 text-white rounded-xl w-10 h-10 flex items-center justify-center transition shadow-sm border border-white/20" title="إعادة الاختبار">
+                <button onclick="showResetModal()" class="flex-shrink-0 bg-white/10 hover:bg-white/20 text-white rounded-xl w-10 h-10 flex items-center justify-center transition shadow-sm border border-white/20" title="إعادة التعيين">
                     <i class="fas fa-undo text-lg opacity-90"></i>
                 </button>
                 <button onclick="showAdminLogin()" class="flex-shrink-0 bg-white/10 hover:bg-white/20 text-white rounded-xl w-10 h-10 flex items-center justify-center transition shadow-sm border border-white/20" title="لوحة المشرف">
@@ -100,7 +113,7 @@
     <div id="resetModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden no-print">
         <div class="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl border-t-4 border-orange-500">
             <h3 class="text-xl font-bold text-orange-600 mb-4 text-center">إعادة تعيين الاختبار</h3>
-            <p class="text-sm text-gray-600 mb-4 text-center">للمشرفين: أدخل كلمة المرور للسماح للموظف بإعادة الاختبار لتجاوز حظر السيرفر.</p>
+            <p class="text-sm text-gray-600 mb-4 text-center">للمشرفين: أدخل كلمة المرور للسماح للموظف بإعادة الاختبار لتجاوز حظر المتصفح.</p>
             <input type="password" id="resetPassInput" class="w-full px-4 py-3 border-2 rounded-xl text-center text-lg mb-3 focus:outline-none focus:border-orange-500" placeholder="كلمة المرور">
             <button id="resetConfirmBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl mb-2 transition">تأكيد السماح بالإعادة</button>
             <button onclick="closeResetModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-xl transition">إلغاء</button>
@@ -556,7 +569,7 @@
 
                     if(isDuplicate) {
                         verifyOverlay.classList.add('hidden');
-                        alert("⚠️ عذراً، هذا الرقم الوظيفي أو الاسم مسجل مسبقاً في قاعدة البيانات. لقد قمت بإجراء الاختبار من قبل ولا يُسمح بإعادته.");
+                        document.getElementById('duplicateModal').classList.remove('hidden');
                         return;
                     }
                 } catch(error) {
@@ -569,6 +582,25 @@
             pendingStart = true;
             document.getElementById('warningModal').classList.remove('hidden');
         });
+
+        // دوال لتخطي المشرف المكرر
+        function closeDuplicateModal() {
+            document.getElementById('duplicateModal').classList.add('hidden');
+            document.getElementById('overridePassInput').value = '';
+            document.getElementById('overrideError').classList.add('hidden');
+        }
+
+        function confirmOverride() {
+            const pass = document.getElementById('overridePassInput').value.trim();
+            if(pass === CONFIG.RESET_PASSWORD) {
+                sessionStorage.setItem('ADMIN_OVERRIDE', 'true');
+                closeDuplicateModal();
+                pendingStart = true;
+                document.getElementById('warningModal').classList.remove('hidden');
+            } else {
+                document.getElementById('overrideError').classList.remove('hidden');
+            }
+        }
 
         function shuffleArray(array) {
             let curId = array.length;
@@ -912,6 +944,7 @@
             document.getElementById('viewModal').classList.add('hidden');
         }
 
+        // خوارزمية تصدير الإكسل المحسنة
         function exportToExcel() {
             if (!allServerData || allServerData.length === 0) {
                 alert('لا توجد بيانات للتصدير');
@@ -919,9 +952,7 @@
             }
 
             try {
-                let csvContent = "\uFEFF"; // تعريف ترميز اللغة العربية UTF-8 لمنع ظهور الرموز الغريبة
-                
-                // 1. تحديد أقصى عدد من الأسئلة في كل السجلات لتوحيد أعمدة الإكسل
+                // تحديد أقصى عدد من الأسئلة في كل السجلات لتوحيد أعمدة الإكسل
                 let maxQuestions = 0;
                 allServerData.forEach(d => {
                     try {
@@ -930,81 +961,59 @@
                     } catch(e){}
                 });
 
-                // 2. بناء العناوين الرئيسية للأعمدة
-                let headers = [
-                    'التاريخ', 'الرقم الوظيفي', 'اسم الموظف', 'الإدارة/الفرع', 
-                    'المسمى الوظيفي', 'النتيجة %', 'الوقت المستغرق', 
-                    'مخالفات الخروج', 'الحالة'
-                ];
-                
-                // إضافة عناوين الأسئلة ديناميكياً
-                for(let i = 1; i <= maxQuestions; i++) {
-                    headers.push(`سؤال ${i}`);
-                    headers.push(`إجابة الموظف ${i}`);
-                    headers.push(`التقييم ${i}`);
-                }
-
-                // تحويل العناوين إلى نص
-                csvContent += headers.map(h => `"${h}"`).join(",") + "\n";
-
-                // 3. تعبئة البيانات لكل موظف
-                allServerData.forEach(d => {
-                    let row = [];
-                    row.push(d.timestamp || '-');
-                    row.push(d.empId || '-');
-                    row.push(d.empName || '-');
-                    row.push(d.department || '-');
-                    row.push(d.jobTitle || '-');
-                    row.push((d.score || '0') + '%');
-                    row.push(d.timeSpent || '-');
-                    row.push(d.exitCount || '0');
-                    
-                    const scoreNum = parseFloat(d.score || 0);
-                    row.push(scoreNum >= 60 ? 'مجتاز' : 'غير مجتاز');
+                // بناء كائن البيانات للإكسل
+                const excelData = allServerData.map(d => {
+                    // البيانات الأساسية للموظف
+                    let row = {
+                        'التاريخ': d.timestamp || '-',
+                        'الرقم الوظيفي': d.empId || '-',
+                        'اسم الموظف': d.empName || '-',
+                        'الإدارة/الفرع': d.department || '-',
+                        'المسمى الوظيفي': d.jobTitle || '-',
+                        'النتيجة %': (d.score || '0') + '%',
+                        'الوقت المستغرق': d.timeSpent || '-',
+                        'مخالفات الخروج': d.exitCount || '0',
+                        'الحالة': parseFloat(d.score || 0) >= 60 ? 'مجتاز' : 'غير مجتاز'
+                    };
 
                     let detailsArray = [];
                     try {
                         detailsArray = typeof d.details === 'string' ? JSON.parse(d.details || '[]') : (d.details || []);
                     } catch(e){}
 
-                    // تعبئة إجابات الأسئلة أو وضع شرطة (-) إذا كان السجل قديماً وناقصاً
+                    // تعبئة إجابات الأسئلة في الأعمدة التالية
                     for(let i = 0; i < maxQuestions; i++) {
                         if (i < detailsArray.length) {
                             let a = detailsArray[i];
-                            row.push(a.questionText || '-');
-                            row.push(a.userAnswer || 'لم يُجب');
+                            row[`سؤال ${i+1}`] = a.questionText || '-';
+                            row[`إجابة الموظف ${i+1}`] = a.userAnswer || 'لم يُجب';
                             
                             let isCorrect = false;
                             if (a.userAnswer && a.correctAnswer) {
                                 isCorrect = a.userAnswer.toString().replace(/\s+/g, ' ').trim() === a.correctAnswer.toString().replace(/\s+/g, ' ').trim();
                             }
-                            row.push(isCorrect ? 'صحيحة' : 'خاطئة');
+                            row[`التقييم ${i+1}`] = isCorrect ? 'صحيحة' : 'خاطئة';
                         } else {
-                            row.push('-'); row.push('-'); row.push('-');
+                            row[`سؤال ${i+1}`] = '-';
+                            row[`إجابة الموظف ${i+1}`] = '-';
+                            row[`التقييم ${i+1}`] = '-';
                         }
                     }
-
-                    // تنظيف النصوص من المسافات وعلامات التنصيص التي تكسر ملفات الإكسل
-                    csvContent += row.map(cell => {
-                        let safeCell = cell === null || cell === undefined ? "" : cell.toString();
-                        safeCell = safeCell.replace(/"/g, '""'); // الهروب من علامات التنصيص
-                        safeCell = safeCell.replace(/(\r\n|\n|\r)/gm, " "); // إزالة المسافات العمودية
-                        return `"${safeCell}"`;
-                    }).join(",") + "\n";
+                    return row;
                 });
 
-                // 4. تفعيل التحميل الإجباري للملف
-                const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                const url = URL.createObjectURL(blob);
-                const link = document.createElement("a");
-                link.setAttribute("href", url);
-                link.setAttribute("download", `KIB_Compliance_Results_${new Date().getTime()}.csv`);
+                // تحويل البيانات لملف إكسل واستخراجها
+                const ws = XLSX.utils.json_to_sheet(excelData);
                 
-                // إضافة العنصر مؤقتاً للنقر عليه ثم حذفه
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
+                // جعل الشيت من اليمين لليسار (RTL)
+                if(!ws['!cols']) ws['!cols'] = [];
+                ws['!dir'] = 'rtl';
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "نتائج الامتثال");
+                
+                // تنزيل الملف
+                XLSX.writeFile(wb, `نتائج_تقييم_الامتثال_${new Date().getTime()}.xlsx`);
 
             } catch (err) {
                 console.error("Export Error Details:", err);
