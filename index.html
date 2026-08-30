@@ -183,7 +183,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-bold mb-2 text-gray-700">اسم الموظف (رباعي) *</label>
-                            <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#0369a1] outline-none transition" placeholder="مثال: محمد أحمد محمد">
+                            <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#0369a1] outline-none transition" placeholder="مثال: محمد أحمد البكيلي">
                             <p id="empNameError" class="text-red-500 text-xs mt-1 hidden">يجب إدخال الاسم الرباعي (3 كلمات على الأقل)</p>
                         </div>
                     </div>
@@ -922,32 +922,56 @@
             
             const exportData = allServerData.map(d => {
                 const row = { 
-                    'التاريخ': d.timestamp, 
-                    'الرقم الوظيفي': d.empId, 
-                    'اسم الموظف': d.empName, 
-                    'الإدارة/الفرع': d.department, 
-                    'المسمى الوظيفي': d.jobTitle,
-                    'النتيجة %': d.score, 
-                    'الوقت المستغرق': d.timeSpent, 
-                    'مخالفات الخروج': d.exitCount,
-                    'الحالة': (parseFloat(d.score) >= PASSING_SCORE) ? 'مجتاز' : 'غير مجتاز'
+                    'التاريخ': d.timestamp || '-', 
+                    'الرقم الوظيفي': d.empId || '-', 
+                    'اسم الموظف': d.empName || '-', 
+                    'الإدارة/الفرع': d.department || '-', 
+                    'المسمى الوظيفي': d.jobTitle || '-',
+                    'النتيجة %': d.score || '0', 
+                    'الوقت المستغرق': d.timeSpent || '-', 
+                    'مخالفات الخروج': d.exitCount || '0',
+                    'الحالة': (parseFloat(d.score || 0) >= PASSING_SCORE) ? 'مجتاز' : 'غير مجتاز'
                 };
+                
                 try { 
-                    const details = JSON.parse(d.details || '[]');
-                    details.forEach((a, i) => { 
-                        row[`سؤال ${i+1}`] = a.questionText;
-                        row[`إجابة ${i+1}`] = a.userAnswer;
-                        row[`النتيجة ${i+1}`] = (a.userAnswer && a.userAnswer.trim() === a.correctAnswer.trim()) ? 'صحيحة' : 'خاطئة';
+                    let detailsArray = [];
+                    // التحقق الآمن من نوع البيانات لتجنب توقف الكود
+                    if (typeof d.details === 'string') {
+                        detailsArray = JSON.parse(d.details || '[]');
+                    } else if (Array.isArray(d.details)) {
+                        detailsArray = d.details;
+                    }
+
+                    detailsArray.forEach((a, i) => { 
+                        row[`سؤال ${i+1}`] = a.questionText || '-';
+                        row[`إجابة ${i+1}`] = a.userAnswer || '-';
+                        
+                        let isCorrect = false;
+                        if (a.userAnswer && a.correctAnswer) {
+                            isCorrect = a.userAnswer.toString().replace(/\s+/g, ' ').trim() === a.correctAnswer.toString().replace(/\s+/g, ' ').trim();
+                        }
+                        row[`النتيجة ${i+1}`] = isCorrect ? 'صحيحة' : 'خاطئة';
                     }); 
                 } catch (e) {
-                    console.error("Error parsing details for export", e);
+                    console.error("تجاوز خطأ في قراءة التفاصيل", e);
                 }
                 return row;
             });
-            const ws = XLSX.utils.json_to_sheet(exportData); 
-            const wb = XLSX.utils.book_new(); 
-            XLSX.utils.book_append_sheet(wb, ws, 'النتائج');
-            XLSX.writeFile(wb, `نتائج_الامتثال_${new Date().toLocaleDateString('ar-SA').replace(/\//g, '-')}.xlsx`);
+            
+            try {
+                const ws = XLSX.utils.json_to_sheet(exportData); 
+                const wb = XLSX.utils.book_new(); 
+                XLSX.utils.book_append_sheet(wb, ws, 'النتائج');
+                
+                // توليد اسم ملف إنجليزي/رقمي آمن لتجنب رفض المتصفح أو الويندوز
+                const dateStr = new Date().toISOString().split('T')[0];
+                const fileName = `KIB_Compliance_Results_${dateStr}.xlsx`;
+                
+                XLSX.writeFile(wb, fileName);
+            } catch (err) {
+                console.error("Excel Export Error: ", err);
+                alert("حدث خطأ أثناء تصدير الملف. يرجى المحاولة لاحقاً أو من متصفح آخر.");
+            }
         }
     </script>
 </body>
