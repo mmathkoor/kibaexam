@@ -94,10 +94,11 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // جلب تاريخ اليوم وتنسيقه باللغة العربية
-            const now = new Date();
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('closeDate').textContent = now.toLocaleDateString('ar-SA', options);
+            // قم بتغيير التاريخ بين علامتي التنصيص إلى التاريخ الذي تريده
+            const customDate = "الإثنين، 31 أغسطس 2026";
+            
+            // تعيين التاريخ في الصفحة
+            document.getElementById('closeDate').textContent = customDate;
         });
     </script>
 
