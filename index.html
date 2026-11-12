@@ -876,11 +876,11 @@
         }
         function refreshDashboard() { loadDashboard(); }
 
-        function renderAdminData() {
-            if (!allServerData || !allServerData.length) {
-                document.getElementById('responsesTableBody').innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-gray-500">لا توجد بيانات حالياً</td></tr>';
-                return;
-            }
+        // function renderAdminData() {
+        //     if (!allServerData || !allServerData.length) {
+        //         document.getElementById('responsesTableBody').innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-gray-500">لا توجد بيانات حالياً</td></tr>';
+        //         return;
+        //     }
             document.getElementById('totalParticipants').textContent = allServerData.length;
             let total = 0, top = 0;
             allServerData.forEach(d => {
