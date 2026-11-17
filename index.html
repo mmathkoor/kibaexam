@@ -740,20 +740,27 @@
             if (passed) showSuccessScreen(final);
             else showFailScreen(final);
             
-            const fd = new FormData();
-            fd.append('timestamp', new Date().toLocaleString('ar-SA')); 
-            fd.append('empId', employeeInfo.id); 
-            fd.append('empName', employeeInfo.name); 
-            fd.append('department', employeeInfo.department); 
-            fd.append('jobTitle', employeeInfo.jobTitle); 
-            fd.append('score', final.toString()); 
-            fd.append('timeSpent', timeSpent); 
-            fd.append('exitCount', exitCount.toString());
-            fd.append('passed', passed.toString()); 
-            fd.append('details', JSON.stringify(quizState)); 
+            const params = new URLSearchParams();
+            params.append('timestamp', new Date().toLocaleString('ar-SA')); 
+            params.append('empId', employeeInfo.id); 
+            params.append('empName', employeeInfo.name); 
+            params.append('department', employeeInfo.department); 
+            params.append('jobTitle', employeeInfo.jobTitle); 
+            params.append('score', final.toString()); 
+            params.append('timeSpent', timeSpent); 
+            params.append('exitCount', exitCount.toString());
+            params.append('passed', passed.toString()); 
+            params.append('details', JSON.stringify(quizState)); 
             
             try {
-                await fetch(CONFIG.GOOGLE_SCRIPT_URL, { method: 'POST', body: fd, mode: 'no-cors' });
+                await fetch(CONFIG.GOOGLE_SCRIPT_URL, { 
+                    method: 'POST', 
+                    body: params.toString(), 
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    mode: 'no-cors' 
+                });
                 const st = passed ? document.getElementById('successStatusDisplay') : document.getElementById('failStatusDisplay');
                 if(st) {
                     st.innerHTML = '<i class="fas fa-check"></i> تم الحفظ بنجاح.';
