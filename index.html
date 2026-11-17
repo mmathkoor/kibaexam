@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>التقييم التنشيطي الشامل لمكافحة الجرائم المالية | KIB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Cairo', sans-serif; }
+        body { background-color: #f3f4f6; }
+        
+        .quiz-option { transition: all 0.2s ease; border: 2px solid #e5e7eb; background: #ffffff; cursor: pointer; }
+        .quiz-option:hover { border-color: #F5B335; background: #fefce8; }
+        .quiz-option:has(input:checked) { background-color: #7A2128; color: white; border-color: #7A2128; box-shadow: 0 4px 10px rgba(122, 33, 40, 0.2); }
+        
+        .nav-btn { width: 35px; height: 35px; border-radius: 8px; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; border: 2px solid #e5e7eb; background: white; }
+        .nav-btn.active { border-color: #7A2128; box-shadow: 0 0 0 2px rgba(122, 33, 40, 0.2); }
+        .nav-btn.answered { background: #10B981; color: white; border-color: #10B981; }
+        .nav-btn.flagged { background: #F5B335; color: white; border-color: #F5B335; }
+        .nav-btn.locked { background: #EF4444; color: white; border-color: #EF4444; cursor: not-allowed; }
+        
+        .time-warning { color: #EF4444 !important; animation: pulse-red 1s infinite; }
+        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #7A2128; border-radius: 10px; }
+        .toast-enter { animation: slideInDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes slideInDown { from { transform: translate(-50%, -100%); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+        
+        .exit-warning-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(122, 33, 40, 0.95); z-index: 99999; display: flex; align-items: center; justify-content: center; color: white; text-align: center; padding: 20px; }
+        .exit-warning-overlay.hidden { display: none; }
+
+        .verify-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .verify-overlay.hidden { display: none !important; }
+
+        @media print {
+            @page { size: A4 landscape; margin: 0; }
+            body { background: white !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; margin: 0; }
+            body * { visibility: hidden; }
+            .no-print { display: none !important; }
+            #adminDashboard, #failScreen, #successScreen, #employeeApp { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div id="verifyOverlay" class="verify-overlay hidden no-print">
+        <i class="fas fa-circle-notch fa-spin text-6xl text-[#7A2128] mb-6"></i>
+        <h2 class="text-2xl font-black text-gray-800 mb-2">جاري التحقق من السجلات...</h2>
+        <p class="text-base text-gray-500 font-semibold">يرجى الانتظار للتأكد من عدم وجود اختبار سابق باسمك أو رقمك الوظيفي</p>
+    </div>
+
+    <!-- نافذة تخطي المشرف للموظف المكرر -->
+    <div id="duplicateModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl border-t-4 border-red-500">
+            <h3 class="text-xl font-black text-red-600 mb-2 text-center">الموظف مسجل مسبقاً!</h3>
+            <p class="text-sm text-gray-600 mb-4 text-center font-semibold">هذا الرقم الوظيفي أو الاسم اختبر من قبل ولا يُسمح له بالإعادة. <br><br>للمشرفين: أدخل كلمة المرور للسماح للموظف بإعادة الاختبار.</p>
+            <input type="password" id="overridePassInput" class="w-full px-4 py-3 border-2 rounded-xl text-center text-lg mb-3 focus:outline-none focus:border-red-500" placeholder="كلمة مرور المشرف">
+            <button onclick="confirmOverride()" class="w-full bg-red-500 hover:bg-red-600 text-white font-black py-3 rounded-xl mb-2 transition">تخطي الحظر وبدء الاختبار</button>
+            <button onclick="closeDuplicateModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-xl transition">إلغاء</button>
+            <div id="overrideError" class="text-red-600 text-xs text-center font-bold mt-2 hidden">كلمة المرور غير صحيحة</div>
+        </div>
+    </div>
+
+    <div id="exitWarningOverlay" class="exit-warning-overlay hidden">
+        <div>
+            <i class="fas fa-exclamation-triangle text-6xl mb-4" style="color: #F5B335;"></i>
+            <h2 class="text-3xl font-black mb-4">⚠️ تنبيه هام!</h2>
+            <p class="text-xl mb-2">تم تسجيل محاولة الخروج من الاختبار.</p>
+            <p class="text-lg mb-6">عدد مرات الخروج المسجلة: <span id="exitCountDisplay" class="font-black text-2xl text-[#F5B335]">0</span></p>
+            <p class="text-sm opacity-80 mb-8">يرجى العودة للاختبار فوراً. أي محاولة خروج تؤثر على تقييمك.</p>
+            <button onclick="returnToQuiz()" class="bg-[#F5B335] hover:bg-yellow-400 text-[#7A2128] font-black py-3 px-8 rounded-xl text-lg transition">
+                <i class="fas fa-arrow-right ml-2"></i> العودة للاختبار
+            </button>
+        </div>
+    </div>
+
+    <header class="bg-[#7A2128] text-white p-3 md:p-4 sticky top-0 z-40 shadow-lg no-print">
+        <div class="container mx-auto max-w-5xl flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-white p-1.5 rounded-full shadow-sm flex-shrink-0">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTxIhDB302tFWezCQwkWsaUd6V0v0dKMpBIA&s" alt="KIB" class="h-8 w-8 md:h-10 md:w-10 object-contain rounded-full">
+                </div>
+                <div class="overflow-hidden">
+                    <h1 class="text-sm md:text-lg font-bold truncate">التقييم التنشيطي الشامل لمكافحة الجرائم المالية</h1>
+                    <p class="text-[10px] md:text-xs text-gray-200 truncate">بنك الكريمي الإسلامي</p>
+                </div>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="showResetModal()" class="flex-shrink-0 bg-white/10 hover:bg-white/20 text-white rounded-xl w-10 h-10 flex items-center justify-center transition shadow-sm border border-white/20" title="إعادة التعيين">
+                    <i class="fas fa-undo text-lg opacity-90"></i>
+                </button>
+                <button onclick="showAdminLogin()" class="flex-shrink-0 bg-white/10 hover:bg-white/20 text-white rounded-xl w-10 h-10 flex items-center justify-center transition shadow-sm border border-white/20" title="لوحة المشرف">
+                    <i class="fas fa-cog text-lg opacity-90"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div id="validationToast" class="fixed top-5 md:top-20 left-1/2 z-50 hidden toast-enter w-[90%] max-w-sm no-print" style="transform: translateX(-50%);">
+        <div class="bg-white border-r-4 border-red-500 rounded-lg shadow-2xl p-4 flex items-center gap-3">
+            <i class="fas fa-exclamation-circle text-red-500 text-2xl"></i>
+            <div class="flex-1"><h4 class="text-red-800 font-bold text-sm">تنبيه!</h4><p id="toastMessage" class="text-gray-600 text-xs mt-1 leading-relaxed">الرجاء إكمال البيانات.</p></div>
+            <button onclick="hideToast()" class="text-gray-400 hover:text-gray-600 p-1"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <!-- نافذة إعادة التعيين -->
+    <div id="resetModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl border-t-4 border-orange-500">
+            <h3 class="text-xl font-bold text-orange-600 mb-4 text-center">إعادة تعيين الاختبار</h3>
+            <p class="text-sm text-gray-600 mb-4 text-center">للمشرفين: أدخل كلمة المرور للسماح للموظف بإعادة الاختبار لتجاوز حظر المتصفح.</p>
+            <input type="password" id="resetPassInput" class="w-full px-4 py-3 border-2 rounded-xl text-center text-lg mb-3 focus:outline-none focus:border-orange-500" placeholder="كلمة المرور">
+            <button id="resetConfirmBtn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 rounded-xl mb-2 transition">تأكيد السماح بالإعادة</button>
+            <button onclick="closeResetModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-xl transition">إلغاء</button>
+            <div id="resetAuthError" class="text-red-600 text-xs text-center font-bold mt-2 hidden">كلمة المرور غير صحيحة</div>
+        </div>
+    </div>
+
+    <!-- نافذة دخول المشرف -->
+    <div id="adminModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white w-full max-w-md p-6 rounded-2xl shadow-2xl border-t-4 border-[#7A2128]">
+            <h3 class="text-xl font-bold text-[#7A2128] mb-4 text-center">لوحة المشرف - الامتثال</h3>
+            <input type="password" id="adminPassInput" class="w-full px-4 py-3 border-2 rounded-xl text-center text-lg mb-3 focus:outline-none focus:border-[#7A2128]" placeholder="كلمة مرور المشرف">
+            <button id="adminLoginBtn" class="w-full bg-[#7A2128] hover:bg-red-900 text-white font-bold py-3 rounded-xl mb-2 transition">دخول للنتائج</button>
+            <button onclick="closeAdminModal()" class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 rounded-xl transition">إلغاء</button>
+            <div id="adminAuthError" class="text-red-600 text-xs text-center font-bold mt-2 hidden">كلمة المرور غير صحيحة</div>
+        </div>
+    </div>
+
+    <!-- نافذة المشاهدة للتفاصيل -->
+    <div id="viewModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60] hidden no-print">
+        <div class="bg-white w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <h3 class="font-bold text-[#7A2128] text-lg">تفاصيل إجابات الموظف: <span id="viewEmpName" class="text-gray-800 font-black"></span></h3>
+                <button onclick="closeViewModal()" class="text-gray-500 hover:text-red-500 transition"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 space-y-4" id="viewContent">
+                <!-- سيتم إدراج الإجابات هنا -->
+            </div>
+            <div class="p-4 border-t bg-gray-50 rounded-b-2xl text-left">
+                <button onclick="closeViewModal()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-6 rounded-lg transition">إغلاق المعاينة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة التحذير قبل البدء -->
+    <div id="warningModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden no-print">
+        <div class="bg-white w-full max-w-lg p-8 rounded-2xl shadow-2xl border-t-4 border-red-500">
+            <div class="text-center mb-6">
+                <i class="fas fa-exclamation-triangle text-red-500 text-5xl mb-3"></i>
+                <h3 class="text-2xl font-black text-red-600 mb-2">⚠️ تعليمات هامة قبل البدء</h3>
+            </div>
+            <div class="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 text-sm leading-relaxed">
+                <ul class="space-y-3 text-red-800 font-semibold">
+                    <li class="flex items-start gap-2"><i class="fas fa-random text-red-500 mt-1"></i><span><strong>الأسئلة (80 سؤال) تظهر بشكل عشوائي</strong> وتختلف من موظف لآخر.</span></li>
+                    <li class="flex items-start gap-2"><i class="fas fa-eye text-red-500 mt-1"></i><span><strong>يتم تسجيل عدد مرات الخروج من المتصفح</strong>.</span></li>
+                    <li class="flex items-start gap-2"><i class="fas fa-ban text-red-500 mt-1"></i><span><strong>الاختبار لمرة واحدة فقط</strong>، ولا يمكن إعادة الدخول بنفس البيانات.</span></li>
+                    <li class="flex items-start gap-2"><i class="fas fa-stopwatch text-red-500 mt-1"></i><span><strong>كل سؤال له دقيقتين فقط</strong>، وبعدها يقفل تلقائياً.</span></li>
+                </ul>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="confirmStartQuiz()" class="flex-1 bg-[#7A2128] hover:bg-red-900 text-white font-bold py-3 rounded-xl transition"><i class="fas fa-check ml-2"></i> أوافق وأبدأ الاختبار</button>
+                <button onclick="cancelStartQuiz()" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 rounded-xl transition">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="employeeApp" class="block no-print">
+        <main class="container mx-auto max-w-5xl p-3 md:p-4 mt-2">
+            
+            <div id="introScreen" class="bg-white rounded-2xl shadow-xl p-6 md:p-10 border-t-4 border-[#F5B335] max-w-3xl mx-auto">
+                <div class="flex justify-center mb-6">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTxIhDB302tFWezCQwkWsaUd6V0v0dKMpBIA&s" alt="KIB Logo" class="h-24 object-contain drop-shadow-md bg-white p-2 rounded-xl border border-gray-100">
+                </div>
+                <h2 class="text-2xl font-black text-center text-[#7A2128] mb-4">التقييم التنشيطي الشامل لمكافحة الجرائم المالية</h2>
+                <div class="bg-red-50 text-red-800 p-4 rounded-xl border border-red-100 mb-8 text-sm font-semibold leading-relaxed">
+                    <ul class="list-disc list-inside pr-4 space-y-1">
+                        <li>يتكون هذا التقييم من <strong>80 سؤالاً</strong> تظهر بترتيب عشوائي يختلف من موظف لآخر.</li>
+                        <li><strong>سيتم تصحيح الإجابات وتسجيل النتيجة ليقوم المشرف بمراجعتها لاحقاً.</strong></li>
+                        <li>لا يمكنك إعادة الاختبار بنفس الرقم الوظيفي إلا بتخويل من المشرف.</li>
+                    </ul>
+                </div>
+                <form id="introForm" class="space-y-5">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-bold mb-2 text-gray-700">الرقم الوظيفي *</label>
+                            <input type="number" id="empId" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition" placeholder="أدخل رقمك الوظيفي">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold mb-2 text-gray-700">اسم الموظف (رباعي) *</label>
+                            <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition" placeholder="مثال: محمد أحمد البكيلي">
+                            <p id="empNameError" class="text-red-500 text-xs mt-1 hidden">يجب إدخال الاسم الرباعي (3 كلمات على الأقل)</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div><label class="block text-sm font-bold mb-2 text-gray-700">الإدارة / الفرع *</label><input type="text" id="empDepartment" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition"></div>
+                        <div><label class="block text-sm font-bold mb-2 text-gray-700">المسمى الوظيفي *</label><input type="text" id="empJobTitle" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition"></div>
+                    </div>
+                    <button type="submit" class="w-full mt-4 bg-[#7A2128] hover:bg-red-900 text-white font-black py-4 rounded-xl shadow-lg text-lg transition-all flex justify-center items-center gap-2">التحقق وبدء الاختبار <i class="fas fa-play mr-2"></i></button>
+                </form>
+            </div>
+
+            <div id="quizScreen" class="hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <div class="lg:col-span-1 bg-white rounded-2xl shadow-md p-4 border-t-4 border-[#F5B335] order-2 lg:order-1 h-fit">
+                        <h3 class="text-sm font-bold text-gray-800 mb-3 border-b pb-2">خريطة الأسئلة</h3>
+                        <div id="navGrid" class="flex flex-wrap gap-2 justify-center" dir="ltr"></div>
+                        <div class="mt-4 text-[10px] font-semibold text-gray-500 space-y-1">
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-white border border-gray-300"></span> لم يُجب عليه</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-[#10B981]"></span> تمت الإجابة</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-[#F5B335]"></span> تم التأجيل (للمراجعة)</div>
+                            <div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-[#EF4444]"></span> انتهى وقته (مغلق)</div>
+                        </div>
+                        <button onclick="finishQuizConfirmation()" class="w-full mt-6 bg-gray-800 hover:bg-black text-white font-bold py-3 rounded-xl transition text-sm"><i class="fas fa-flag-checkered"></i> تسليم الاختبار</button>
+                    </div>
+                    <div class="lg:col-span-3 order-1 lg:order-2">
+                        <div class="bg-white rounded-2xl shadow-md p-4 mb-4 flex justify-between items-center border-b-4 border-[#7A2128]">
+                            <div><p id="sectionTitle" class="text-xs text-[#F5B335] font-bold mb-1">التقييم المعرفي</p><p class="text-sm font-black text-gray-800">السؤال <span id="currentQNum">1</span></p></div>
+                            <div class="text-center bg-gray-50 px-4 py-2 rounded-xl border border-gray-200"><p class="text-[10px] text-gray-500 font-bold mb-0.5"><i class="fas fa-clock"></i> الوقت المتبقي</p><p id="timerDisplay" class="text-xl font-black text-[#7A2128] tracking-widest">02:00</p></div>
+                        </div>
+                        <div class="bg-white rounded-2xl shadow-xl p-6 md:p-8 min-h-[350px] relative">
+                            <h3 id="questionText" class="text-lg md:text-xl font-bold text-[#7A2128] mb-6 leading-relaxed">نص السؤال</h3>
+                            <div id="optionsContainer" class="space-y-3"></div>
+                            <div class="mt-8 flex justify-between items-center border-t pt-4">
+                                <button onclick="markForReview()" class="text-yellow-600 hover:bg-yellow-50 font-bold py-2 px-4 rounded-lg transition text-sm border border-yellow-200"><i class="fas fa-flag"></i> تأجيل للمراجعة</button>
+                                <button id="nextBtn" onclick="saveAndNext()" class="bg-[#7A2128] hover:bg-red-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition-all flex items-center gap-2">التالي <i class="fas fa-arrow-left text-sm"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="successScreen" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-gray-100 p-4 no-print">
+        <div class="bg-white max-w-lg w-full rounded-2xl shadow-2xl p-8 md:p-10 text-center border-t-4 border-[#10B981]">
+            <i class="fas fa-check-circle text-[#10B981] text-6xl mb-5"></i>
+            <h2 class="text-2xl font-black text-[#7A2128] mb-3">تهانينا! لقد أنهيت التقييم بنجاح</h2>
+            <p class="text-gray-600 leading-relaxed mb-2">
+                تم استلام إجاباتك وحفظ نتيجتك في سجلات البنك.
+            </p>
+            <p class="text-gray-500 text-sm mb-6">نتيجتك: <span id="successScoreDisplay" class="font-black text-[#10B981] text-base">0%</span></p>
+            
+            <div class="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm font-semibold mb-6 flex items-center justify-center gap-2" id="successStatusDisplay">
+                <i class="fas fa-spinner fa-spin"></i> جاري إرسال البيانات للسيرفر...
+            </div>
+            
+            <div class="space-y-3 mt-4">
+                <p class="text-gray-500 font-bold text-sm">يمكنك الآن إغلاق هذه الصفحة بأمان.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="failScreen" class="hidden fixed inset-0 z-40 flex items-center justify-center bg-gray-100 p-4 no-print">
+        <div class="bg-white max-w-lg w-full rounded-2xl shadow-2xl p-8 md:p-10 text-center border-t-4 border-red-500">
+            <i class="fas fa-circle-exclamation text-red-500 text-6xl mb-5"></i>
+            <h2 class="text-2xl font-black text-[#7A2128] mb-3">شكراً لمشاركتك في التقييم</h2>
+            <p class="text-gray-600 leading-relaxed mb-2">
+                تم استلام إجاباتك وحفظها بنجاح، سيقوم المشرف بمراجعة النتائج.
+            </p>
+            <p class="text-gray-500 text-sm mb-6">نتيجتك: <span id="failScoreDisplay" class="font-black text-red-500 text-base">0%</span></p>
+            
+            <div class="bg-red-50 border border-red-200 text-red-800 p-3 rounded-lg text-sm font-semibold mb-6 flex items-center justify-center gap-2" id="failStatusDisplay">
+                <i class="fas fa-spinner fa-spin"></i> جاري إرسال البيانات للسيرفر...
+            </div>
+
+            <div class="space-y-3 mt-4">
+                <button onclick="showResetModal()" class="w-full bg-[#F5B335] hover:bg-yellow-500 text-white font-bold py-3 px-8 rounded-xl shadow-md transition"><i class="fas fa-undo ml-2"></i> إعادة الاختبار (بصلاحية المشرف)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminDashboard" class="hidden bg-gray-50 min-h-screen fixed inset-0 z-50 overflow-y-auto no-print">
+        <header class="bg-[#7A2128] text-white p-3 sticky top-0 z-40 shadow-md">
+            <div class="container mx-auto max-w-7xl flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="bg-white p-1 rounded-full shadow-sm"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTxIhDB302tFWezCQwkWsaUd6V0v0dKMpBIA&s" alt="KIB" class="h-8 w-8 object-contain rounded-full"></div>
+                    <h1 id="adminHeaderTitle" class="text-sm md:text-base font-bold">إدارة التقييم والنتائج - الامتثال</h1>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="exportToExcel()" id="exportBtn" class="bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded text-xs font-bold transition shadow-sm"><i class="fas fa-file-excel ml-1"></i> تصدير البيانات</button>
+                    <button onclick="refreshDashboard()" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-xs transition" title="تحديث البيانات"><i class="fas fa-sync-alt"></i></button>
+                    <button onclick="logoutAdmin()" class="bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded text-xs transition" title="تسجيل الخروج"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </header>
+        <main class="container mx-auto max-w-7xl p-4 mt-2 pb-10">
+            <div id="adminInfo" class="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4 text-sm hidden">
+                <div class="flex justify-between items-center">
+                    <span class="font-bold text-yellow-800"><i class="fas fa-user-shield ml-1"></i> <span id="adminInfoText"></span></span>
+                    <span class="text-yellow-600 text-xs" id="adminEmailText"></span>
+                </div>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+               <div class="bg-white p-5 rounded-xl shadow-sm border-r-4 border-[#7A2128]"><p class="text-gray-500 text-xs font-bold mb-1">إجمالي المختبرين</p><p class="text-3xl font-black text-gray-800" id="totalParticipants">0</p></div> 
+                <div class="bg-white p-5 rounded-xl shadow-sm border-r-4 border-[#F5B335]"><p class="text-gray-500 text-xs font-bold mb-1">متوسط النتائج</p><p class="text-3xl font-black text-[#F5B335]" id="avgScore">0%</p></div>
+                <div class="bg-white p-5 rounded-xl shadow-sm border-r-4 border-[#10B981]"><p class="text-gray-500 text-xs font-bold mb-1">أعلى نتيجة</p><p class="text-3xl font-black text-[#10B981]" id="topScore">0%</p></div>
+            </div>
+            <div class="bg-white p-4 rounded-xl shadow-sm">
+                <div class="flex justify-between items-center mb-4 border-r-4 border-[#F5B335] pr-2">
+                    <h3 class="text-sm font-bold text-[#7A2128]">سجل الموظفين والنتائج</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-right">
+                        <thead class="bg-gray-50 text-gray-600 text-xs border-b" id="tableHeader">
+                            <tr>
+                                <th class="p-3">التاريخ</th>
+                                <th class="p-3">الرقم الوظيفي</th>
+                                <th class="p-3">اسم الموظف</th>
+                                <th class="p-3">الإدارة/الوظيفة</th>
+                                <th class="p-3 text-center">الوقت المستغرق</th>
+                                <th class="p-3 text-center">النتيجة %</th>
+                                <th class="p-3 text-center">مخالفات</th>
+                                <th class="p-3 text-center">الحالة</th>
+                                <th class="p-3 text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="responsesTableBody" class="text-sm">
+                            <tr><td colspan="9" class="text-center p-8 font-bold text-gray-500"><i class="fas fa-spinner fa-spin"></i> جاري تحميل البيانات...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // بنك الأسئلة الشامل (الـ 80 سؤال الخاصة بملف الإكسل)
+        const ALL_QUESTIONS = [
+            { section: "التقييم التنشيطي", type: "mcq", q: "الجرائم المالية هي الأفعال التي تهدف للحصول على منفعة مالية بطرق غير قانونية.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "من أمثلة الجرائم المالية: غسل الأموال، تمويل الإرهاب، الاحتيال، التهرب من العقوبات، الفساد والرشوة، والتهرب الضريبي.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "الجرائم المالية تؤثر سلباً على استقرار النظام المالي وسمعة المؤسسات المصرفية.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "غسل الأموال هو إخفاء أو تمويه المصدر غير المشروع للأموال المتحصلة من جرائم أصلية.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "غسل الأموال يشمل إدخال الأموال غير المشروعة في النظام المالي لإخفاء مصدرها.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تمويل الإرهاب قد يستخدم أموالاً مشروعة (مثل التبرعات) أو غير مشروعة لتحقيق أغراض إرهابية.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "مراحل غسل الأموال الثلاث بالترتيب هي: الإيداع – التمويه (التغطية) – الدمج.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "مرحلة الإيداع في الحسابات هي المرحلة الأولى من مراحل غسل الأموال.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "مرحلة الإيداع هي إدخال الأموال غير المشروعة للنظام المالي عبر البنوك أو شركات الصرافة أو التأمين.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "مرحلة التمويه (التغطية) تهدف إلى فصل الأموال عن مصدرها غير المشروع عبر سلسلة من العمليات المالية المعقدة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "مرحلة الدمج هي إعادة ضخ الأموال في الاقتصاد وإظهارها كأنها ناتجة من نشاط تجاري مشروع.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تحويل أو حيازة الأموال الناتجة عن تجارة غير قانونية مع العلم بمصدرها يُعد جريمة غسل أموال.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "غسل الأموال يضعف الاقتصاد الوطني، يشوّه المنافسة العادلة، ويزيد من معدلات الفساد.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "غسل الأموال وتمويل الإرهاب لهما آثار اقتصادية وأمنية واجتماعية خطيرة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "الجرائم المالية القائمة على التجارة (TBML) هي استغلال أنظمة الاستيراد والتصدير والمستندات التجارية لنقل وإخفاء الأموال غير المشروعة عبر الحدود.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "من أساليب الجرائم المالية القائمة على التجارة: التلاعب بقيمة الفواتير بالزيادة أو النقصان (Over/Under Invoicing)، الشحن الوهمي (Phantom Shipment)، والدفع من أطراف ثالثة غير ذات علاقة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "في بوليصة الشحن البحري: الشاحن (Shipper) هو المرسل للبضاعة، والمرسل إليه (Consignee) هو المستورد، والطرف المُخطَر (Notify Party) هو الجهة التي تُبلَّغ عند وصول البضاعة لبدء إجراءات الاستلام.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "الشركة الوهمية (Shell Company) هي شركة مسجلة ورقياً وليس لها عمليات تشغيلية مستقلة أو أصول حقيقية أو موظفون، وغالباً ما تُستخدم كقناة لإخفاء المستفيد الحقيقي.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "شركة الواجهة (Front Company) هي كيان يمارس نشاطاً تجارياً حقيقياً ومعلناً، ويُستغل لخلط الأموال غير المشروعة مع عائدات النشاط المشروع.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "مبدأ اعرف عميلك (KYC) يعني التعرف على العميل، التحقق من هويته، وفهم طبيعة نشاطه ومصدر أمواله.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تحديد هوية العميل (Identification) هو جمع البيانات الأساسية للعميل مثل الاسم الكامل، تاريخ الميلاد، العنوان، ورقم الهوية.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "التحقق من العميل (Verification) هو التأكد من صحة بيانات وهوية العميل بالرجوع إلى وثائق ومصادر رسمية مستقلة وموثوقة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "المستفيد الحقيقي (UBO) هو الشخص الطبيعي الذي يملك أو يسيطر فعلياً وبشكل نهائي على العميل أو الحساب أو المعاملة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يجوز للبنك فتح حساب لشركة دون تحديد المستفيد الحقيقي إذا كان مدير الشركة معروفاً لدى الفرع.", options: ["صح", "خطأ"], answer: "خطأ" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "العملاء غير المقيمين يُصنفون عادةً ضمن فئة العملاء ذوي المخاطر المرتفعة ويتطلبون عناية واجبة معززة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يمكن تقسيم مستويات مخاطر العملاء في البنك إلى: مخاطر منخفضة، ومخاطر متوسطة، ومخاطر مرتفعة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تصنيف عملاء البنك إلى (منخفض، متوسط، مرتفع، محظور من التعامل) يساعد البنك في تحديد مستوى الرقابة والعناية المطلوبة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "النهج القائم على المخاطر (RBA) يعني تخصيص مستوى الرقابة والعناية والموارد بما يتناسب مع درجة المخاطر؛ فكلما زادت المخاطر زادت الإجراءات الرقابية.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "العناية الواجبة القياسية (CDD) تشمل التحقق من هوية العميل والمستفيد الحقيقي عبر مصادر مستقلة وموثوقة، وفهم الغرض من علاقة العمل وطبيعتها.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "العناية الواجبة المبسَّطة (SDD) تُطبّق عند انخفاض المخاطر، وتعفي البنك نهائياً من التحقق من هوية العميل.", options: ["صح", "خطأ"], answer: "خطأ" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "العناية الواجبة المعززة (EDD) هي إجراءات تحقق إضافية ومشددة تُطبّق عندما يكون خطر غسل الأموال مرتفعاً، مثل التعامل مع الأشخاص المعرضين سياسياً.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تقتصر فئة الأشخاص المعرضين سياسياً (PEPs) على المسؤولين الحكوميين الحاليين فقط، ولا تشمل أفراد أسرهم أو المقربين منهم.", options: ["صح", "خطأ"], answer: "خطأ" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "الشركات ذات الهياكل المعقدة هي التي تتكون ملكيتها من عدة طبقات قانونية أو كيانات متداخلة مما يصعّب تحديد المالك المستفيد الحقيقي.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "الشركات ذات الهياكل المعقدة تُصنف ضمن العملاء مرتفعي المخاطر وتتطلب فحصاً دقيقاً لسلسلة الملكية.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "لا يجوز للبنك فتح حسابات مجهولة الهوية أو حسابات بأسماء وهمية أو رقمية تحت أي مبرر.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "الحسابات الوهمية والصورية ممنوعة قطعاً وفق سياسة قبول العملاء في البنك.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يجب تطبيق إجراءات العناية الواجبة عند فتح الحساب، أو عند تنفيذ عمليات عارضة تتجاوز الحد المقرر، أو عند الاشتباه بغسل أموال.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يجب طلب والاحتفاظ بالمؤيدات والمستندات الداعمة لإيداعات العملاء النقدية أو التحويلات الكبيرة بما يتناسب مع نشاط العميل.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "معرفة مصدر دخل العميل وثروته وتوثيقهما يُعد جزءاً أساسياً من متطلبات اعرف عميلك (KYC).", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يُمنع استخدام الحسابات البنكية في تداول أو تسوية العملات الافتراضية/المشفرة بالمخالفة لتعليمات الجهات الرقابية.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يُسمح للعميل باستخدام حسابه الشخصي لاستقبال إيرادات نشاطه التجاري لتسهيل أعماله.", options: ["صح", "خطأ"], answer: "خطأ" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يُمنع التعامل مع الشركات الوهمية أو البنوك الصورية (Shell Banks) التي ليس لها وجود مادي حقيقي.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "مراقبة المعاملات تعني متابعة وتحليل عمليات العميل ومقارنتها بملفه التعريفي وسجله التاريخي لاكتشاف أي انحراف غير مبرر.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "المعاملة غير العادية هي معاملة لا تتوافق مع بيانات العميل أو طبيعة نشاطه أو تفتقر إلى مبرر اقتصادي أو قانوني واضح.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "حدوث تغييرات ملحوظة ومفاجئة في حجم أو وتيرة معاملات العميل دون مبرر تجاري يُعد مؤشر اشتباه يستدعي الفحص.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "عدم وجود مبرر اقتصادي أو منطقي للمعاملة أو إصرار العميل على السرية المفرطة يُعد من مؤشرات الاشتباه.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تجزئة المبالغ الكبيرة إلى إيداعات أو تحويلات متكررة صغيرة (Structuring / Smurfing) لتجنب حدود الإبلاغ تُعد أسلوباً شائعاً لغسل الأموال.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "عند الاشتباه في عميل أو معاملة، يجب على الموظف رفع تقرير اشتباه داخلي لإدارة الامتثال فوراً دون تأخير.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تقرير الأنشطة المشبوهة (SAR) يُقدَّم عند الاشتباه في سلوك أو نمط نشاط غير طبيعي للعميل ككل، وليس بالضرورة معاملة واحدة فقط.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تقرير المعاملات المشبوهة (STR) يُقدَّم عند الاشتباه في معاملة مالية محددة بعينها (مثل تحويل أو إيداع أو اعتماد مستندي) بارتباطها بغسل أموال أو تمويل إرهاب.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "إذا استفسر العميل عن سبب تأخر حوالته المعلقة لدى الامتثال، يجوز للموظف إخباره بأن إدارة الامتثال تشتبه في معاملته.", options: ["صح", "خطأ"], answer: "خطأ" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "الموظف الذي يبلغ عن الاشتباهات المحتملة بحسن نية يتمتع بالحماية القانونية ولا يتحمل أي مسؤولية مدنية أو جنائية أو وظيفية.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يجب تحديث بيانات ومستندات العملاء بشكل دوري ومستمر، وبوتيرة أسرع للعملاء مرتفعي المخاطر.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يجب الاحتفاظ بسجلات العملاء ومستندات الهوية والمعاملات لمدة لا تقل عن خمس سنوات من تاريخ انتهاء العلاقة أو إتمام العملية.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "معلومات العملاء وبياناتهم المالية وتقارير الاشتباه الداخلية يجب أن تبقى سرية للغاية ولا تُتداول إلا مع الجهات المخولة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "إدخال بيانات غير دقيقة أو عشوائية في النظام المصرفي عند فتح الحساب أو تنفيذ الحوالات يُعرّض البنك للمساءلة القانونية والرقابية.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "الاحتيال المالي هو استخدام الخداع أو التضليل أو التزوير للحصول على منفعة مالية غير مشروعة أو الإضرار بالغير.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "من أساليب الاحتيال الشائعة ضد العملاء: خدع الجوائز الوهمية، وعروض التوظيف أو الهجرة المزيفة، وانتحال صفة موظفي البنوك.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "العميل الذي يُظهر استعجالاً غير مبرر أو ارتباكاً واضحاً أثناء تنفيذ تحويل مالي لجهة غير معروفة قد يكون ضحية عملية احتيال.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تقديم مستندات هوية مزورة أو معدّلة أو وجود تناقض في بيانات العميل يُعد من العلامات الواضحة لمحاولة احتيال.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "عند الشك الجدي في وجود عملية احتيال، يجب التوقف عن تنفيذ المعاملة فوراً وتصعيد الحالة للجهة المختصة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يجب رفع أي محاولة احتيال (سواء نُفذت أو أُحبطت) إلى إدارة الامتثال ومكافحة الاحتيال فوراً.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يجب فحص أطراف المعاملة مقابل قوائم العقوبات الدولية والمحلية بعد تنفيذ الحوالة لضمان سرعة خدمة العميل.", options: ["صح", "خطأ"], answer: "خطأ" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "عند ظهور تطابق جزئي في الاسم مع قوائم العقوبات (False Positive)، يحق لموظف الفرع تجاوز التنبيه وتنفيذ العملية إذا كان يعرف العميل.", options: ["صح", "خطأ"], answer: "خطأ" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يلتزم البنك بالتجميد الفوري ودون تأخير لأموال وأصول المدرجين على قوائم العقوبات الدولية (مثل مجلس الأمن) دون إخطار مسبق للعميل.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "استخدام شركات وسيطة في دول ثالثة أو تزوير شهادة منشأ البضاعة لإخفاء ارتباط المعاملة بدولة خاضعة للعقوبات يُعد جريمة تهرب من العقوبات.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تقتصر مسؤولية البنك في مكافحة الجرائم المالية على غسل الأموال وتمويل الإرهاب فقط، ولا تشمل تمويل انتشار أسلحة الدمار الشامل.", options: ["صح", "خطأ"], answer: "خطأ" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تشمل ضوابط مكافحة تمويل انتشار التسلح مراقبة تمويل التجارة للسلع ذات الاستخدام المزدوج (المدني والعسكري) للتأكد من عدم ارتباطها ببرامج محظورة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يُسمح للبنك بفتح حساب مراسلة لبنك أجنبي لا يمتلك وجوداً مادياً حقيقياً في بلد الترخيص طالما لديه ترخيص ورقي.", options: ["صح", "خطأ"], answer: "خطأ" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يجب أن تتضمن التحويلات البرقية (السويفت) بيانات دقيقة وكاملة عن الآمر بالتحويل والمستفيد، ويُمنع تنفيذ حوالات تفتقر لهذه البيانات.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يجوز لموظف خدمة العملاء في البنك طلب رمز التحقق المرسل لهاتف العميل (OTP) عبر الهاتف بغرض تحديث بيانات الحساب.", options: ["صح", "خطأ"], answer: "خطأ" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "عند استلام طلب عبر البريد الإلكتروني لتغيير الحساب البنكي لمورّد معتمد، يجب التحقق من صحة الطلب عبر وسيلة اتصال موثوقة ومسجلة مسبقاً قبل التحويل.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "قيام شخص بفتح حساب بنكي واستقبال وتحويل أموال مجهولة المصدر لصالح آخرين مقابل عمولة يُعد مشاركة في غسل الأموال والاحتيال.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "قبول موظف البنك لهدايا ثمينة أو منافع مادية من عميل مقابل تسهيل فتح حساب أو تجاوز مستندات مطلوبة يُعد مخالفة جسيمة لسياسات مكافحة الفساد والرشوة.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "في حال رفض العميل تقديم مستندات تثبت مصدر أمواله أو هوية المستفيد الحقيقي، يجب الامتناع عن تنفيذ العملية والنظر في رفع تقرير اشتباه.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "يتمتع مسؤول الإبلاغ عن غسل الأموال (MLRO) بالاستقلالية التامة وصلاحية الاطلاع على كافة السجلات ورفع تقارير الاشتباه لوحدة المعلومات المالية دون تدخل.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "إذا وردت حوالة خارجية لصالح عميل لا يتناسب مبلغها مع نشاطه المعروف، يحق للبنك تعليق قيدها لحين الحصول على مؤيدات مصدرها والغرض منها.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "مشاركة الموظف لكلمة المرور الخاصة بنظام البنك مع زميله لتسهيل إنجاز العمل أثناء غيابه تُعد مخالفة أمنية جسيمة قد تُستغل في الاحتيال الداخلي.", options: ["صح", "خطأ"], answer: "صح" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تقع مسؤولية مكافحة غسل الأموال وتمويل الإرهاب على موظفي إدارة الامتثال فقط، ولا يُلزم موظفو الفروع بحضور الدورات التدريبية.", options: ["صح", "خطأ"], answer: "خطأ" },
+            { section: "التقييم التنشيطي", type: "mcq", q: "تُعد عائدات جرائم الاحتيال المالي والاختلاس أموالاً غير مشروعة، وإخفاؤها أو تحويلها عبر النظام المصرفي يُشكل جريمة غسل أموال.", options: ["صح", "خطأ"], answer: "صح" }
+        ];
+
+        const PASSING_SCORE = 60; 
+        const CONFIG = {
+            STORAGE_KEY: "KIB_COMPLIANCE_QUIZ_80Q_V2",      
+            EXIT_COUNT_KEY: "KIB_COMPLIANCE_EXIT_80Q_V2",    
+            USER_QUESTIONS_KEY: "KIB_COMPLIANCE_Q_80Q_V2",   
+            GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwSS5O1vu0zEn55eBe3VPBbLfUy77Ge993s6p0B_h54WK7KIkjglbGcc8xc1Py-NerY/exec",
+            RESET_PASSWORD: "KIB2026",
+            ADMINS: {
+                "Compliance2026": { name: "إدارة الامتثال", role: "super_admin", email: "compliance@kib.com" },
+                "KIB2026": { name: "مدير النظام", role: "super_admin", email: "admin@kib.com" }
+            }
+        };
+
+        let userQuestions = [];
+        let quizState = [];
+        let currentQuestion = 0, timerInterval, startTime, employeeInfo = {}, allServerData = [], currentAdmin = null;
+        let exitCount = 0, isQuizActive = false, pendingStart = false;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            exitCount = parseInt(localStorage.getItem(CONFIG.EXIT_COUNT_KEY) || '0');
+            
+            const savedStatus = localStorage.getItem(CONFIG.STORAGE_KEY);
+            if (savedStatus === 'submitted') {
+                showSuccessScreen(parseInt(localStorage.getItem('KIB_FINAL_SCORE') || '0'));
+            } else if (savedStatus === 'submitted_failed') {
+                showFailScreen(parseInt(localStorage.getItem('KIB_FINAL_SCORE') || '0'));
+            }
+            
+            document.getElementById('adminLoginBtn').addEventListener('click', adminLoginHandler);
+            document.getElementById('resetConfirmBtn').addEventListener('click', resetExamHandler);
+            setupSecurity();
+        });
+
+        function setupSecurity() {
+            window.addEventListener('beforeunload', (e) => {
+                if (isQuizActive) {
+                    exitCount++; localStorage.setItem(CONFIG.EXIT_COUNT_KEY, exitCount.toString());
+                    e.preventDefault(); e.returnValue = ''; return '';
+                }
+            });
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && isQuizActive) {
+                    exitCount++; localStorage.setItem(CONFIG.EXIT_COUNT_KEY, exitCount.toString());
+                }
+                if (!document.hidden && isQuizActive && exitCount > 0) showExitWarning();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) || (e.ctrlKey && e.key === 'U')) {
+                    e.preventDefault(); showToast('هذا الإجراء غير مسموح به في النظام'); return false;
+                }
+            });
+            document.addEventListener('contextmenu', (e) => { e.preventDefault(); return false; });
+        }
+
+        function showExitWarning() {
+            document.getElementById('exitCountDisplay').textContent = exitCount;
+            document.getElementById('exitWarningOverlay').classList.remove('hidden');
+        }
+
+        function returnToQuiz() {
+            document.getElementById('exitWarningOverlay').classList.add('hidden');
+            if (isQuizActive && quizState[currentQuestion]?.status !== 'locked') startTimer();
+        }
+
+        document.getElementById('introForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById('empName');
+            const nameValue = nameInput.value.trim();
+            const empIdValue = document.getElementById('empId').value.trim();
+
+            if (nameValue.split(/\s+/).filter(w => w.length > 0).length < 3) {
+                document.getElementById('empNameError').classList.remove('hidden');
+                nameInput.classList.add('border-red-500'); nameInput.focus(); return;
+            }
+            document.getElementById('empNameError').classList.add('hidden');
+            nameInput.classList.remove('border-red-500');
+            
+            employeeInfo = {
+                id: empIdValue,
+                name: nameValue,
+                department: document.getElementById('empDepartment').value.trim(),
+                jobTitle: document.getElementById('empJobTitle').value.trim()
+            };
+            
+            const hasAdminOverride = sessionStorage.getItem('ADMIN_OVERRIDE') === 'true';
+
+            if (!hasAdminOverride) {
+                const verifyOverlay = document.getElementById('verifyOverlay');
+                verifyOverlay.classList.remove('hidden');
+
+                try {
+                    const res = await fetch(CONFIG.GOOGLE_SCRIPT_URL);
+                    const data = await res.json();
+
+                    const isDuplicate = data.some(d => {
+                        const serverId = (d.empId || "").toString().trim();
+                        const serverName = (d.empName || "").toString().trim();
+                        const currentId = employeeInfo.id.toString().trim();
+                        const currentName = employeeInfo.name.toString().trim();
+
+                        return (serverId !== "" && serverId === currentId) || 
+                               (serverName !== "" && serverName === currentName);
+                    });
+
+                    if(isDuplicate) {
+                        verifyOverlay.classList.add('hidden');
+                        document.getElementById('duplicateModal').classList.remove('hidden');
+                        return;
+                    }
+                } catch(error) {
+                    console.error("فشل التحقق من قاعدة البيانات", error);
+                }
+
+                verifyOverlay.classList.add('hidden');
+            }
+
+            pendingStart = true;
+            document.getElementById('warningModal').classList.remove('hidden');
+        });
+
+        // دوال لتخطي المشرف المكرر
+        function closeDuplicateModal() {
+            document.getElementById('duplicateModal').classList.add('hidden');
+            document.getElementById('overridePassInput').value = '';
+            document.getElementById('overrideError').classList.add('hidden');
+        }
+
+        function confirmOverride() {
+            const pass = document.getElementById('overridePassInput').value.trim();
+            if(pass === CONFIG.RESET_PASSWORD) {
+                sessionStorage.setItem('ADMIN_OVERRIDE', 'true');
+                closeDuplicateModal();
+                pendingStart = true;
+                document.getElementById('warningModal').classList.remove('hidden');
+            } else {
+                document.getElementById('overrideError').classList.remove('hidden');
+            }
+        }
+
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        function generateRandomQuiz() {
+            // سحب جميع الأسئلة الـ 80 وخلطها عشوائياً للموظف
+            return shuffleArray([...ALL_QUESTIONS]); 
+        }
+
+        function confirmStartQuiz() {
+            if (!pendingStart) return;
+            pendingStart = false;
+            
+            sessionStorage.removeItem('ADMIN_OVERRIDE');
+
+            document.getElementById('warningModal').classList.add('hidden');
+            document.getElementById('introScreen').classList.add('hidden');
+            document.getElementById('quizScreen').classList.remove('hidden');
+            
+            const storedQ = localStorage.getItem(CONFIG.USER_QUESTIONS_KEY);
+            if (storedQ) {
+                userQuestions = JSON.parse(storedQ);
+            } else {
+                userQuestions = generateRandomQuiz();
+                localStorage.setItem(CONFIG.USER_QUESTIONS_KEY, JSON.stringify(userQuestions));
+            }
+            
+            quizState = Array(userQuestions.length).fill().map(() => ({ answer: '', timeLeft: 120, status: 'unanswered' }));
+
+            startTime = Date.now();
+            isQuizActive = true; exitCount = 0; localStorage.setItem(CONFIG.EXIT_COUNT_KEY, '0');
+            buildNavigator(); loadQuestion(0);
+        }
+
+        function cancelStartQuiz() { pendingStart = false; document.getElementById('warningModal').classList.add('hidden'); }
+
+        function showResetModal() { document.getElementById('resetModal').classList.remove('hidden'); document.getElementById('resetPassInput').value = ''; document.getElementById('resetAuthError').classList.add('hidden'); }
+        function closeResetModal() { document.getElementById('resetModal').classList.add('hidden'); }
+        function resetExamHandler() {
+            if (document.getElementById('resetPassInput').value.trim() === CONFIG.RESET_PASSWORD) {
+                localStorage.removeItem(CONFIG.STORAGE_KEY); 
+                localStorage.removeItem(CONFIG.EXIT_COUNT_KEY); 
+                localStorage.removeItem(CONFIG.USER_QUESTIONS_KEY);
+                localStorage.removeItem('KIB_EMP_NAME'); 
+                localStorage.removeItem('KIB_FINAL_SCORE');
+                
+                sessionStorage.setItem('ADMIN_OVERRIDE', 'true');
+
+                document.getElementById('resetModal').classList.add('hidden');
+                document.getElementById('successScreen')?.classList.add('hidden');
+                document.getElementById('failScreen')?.classList.add('hidden');
+                document.getElementById('employeeApp').classList.remove('hidden');
+                document.getElementById('introScreen').classList.remove('hidden');
+                document.getElementById('quizScreen').classList.add('hidden');
+                userQuestions = [];
+                quizState = [];
+                currentQuestion = 0; isQuizActive = false; exitCount = 0; clearInterval(timerInterval);
+                showToast("تم السماح بإعادة الاختبار بنجاح");
+            } else {
+                document.getElementById('resetAuthError').classList.remove('hidden');
+            }
+        }
+
+        function buildNavigator() {
+            const grid = document.getElementById('navGrid'); grid.innerHTML = '';
+            for (let i = 0; i < userQuestions.length; i++) {
+                const btn = document.createElement('button');
+                btn.id = `navBtn_${i}`; btn.className = 'nav-btn'; btn.textContent = i + 1;
+                btn.addEventListener('click', () => { if (i >= 0 && i < userQuestions.length) loadQuestion(i); });
+                grid.appendChild(btn);
+            }
+        }
+
+        function updateNavStyles() {
+            for (let i = 0; i < userQuestions.length; i++) {
+                const btn = document.getElementById(`navBtn_${i}`); if (!btn) continue;
+                btn.className = 'nav-btn';
+                if (quizState[i].status === 'answered') btn.classList.add('answered');
+                else if (quizState[i].status === 'flagged') btn.classList.add('flagged');
+                else if (quizState[i].status === 'locked') btn.classList.add('locked');
+                if (i === currentQuestion) btn.classList.add('active');
+            }
+        }
+
+        function loadQuestion(index) {
+            clearInterval(timerInterval); currentQuestion = index;
+            const q = userQuestions[currentQuestion]; const state = quizState[currentQuestion];
+            document.getElementById('currentQNum').textContent = currentQuestion + 1;
+            document.getElementById('sectionTitle').textContent = q.section;
+            document.getElementById('questionText').textContent = q.q;
+            
+            const container = document.getElementById('optionsContainer'); container.innerHTML = '';
+            const locked = state.status === 'locked';
+            
+            if (q.type === 'mcq') {
+                q.options.forEach(opt => {
+                    const checked = state.answer === opt.trim() ? 'checked' : '';
+                    const label = document.createElement('label');
+                    label.className = `quiz-option block p-4 rounded-xl flex items-center gap-3 w-full ${locked ? 'opacity-50 cursor-not-allowed' : ''}`;
+                    label.innerHTML = `<input type="radio" name="q_answer" value="${opt.trim()}" ${checked} ${locked ? 'disabled' : ''} class="w-5 h-5 accent-[#7A2128]"><span class="font-semibold text-sm md:text-base leading-relaxed">${opt}</span>`;
+                    if (!locked) label.querySelector('input').addEventListener('change', tempSaveAnswer);
+                    container.appendChild(label);
+                });
+            }
+            updateNavStyles();
+            if (!locked) startTimer();
+            else { document.getElementById('timerDisplay').textContent = "00:00"; document.getElementById('timerDisplay').classList.remove('time-warning'); }
+        }
+
+        function tempSaveAnswer() {
+            const q = userQuestions[currentQuestion]; let ans = "";
+            const checked = document.querySelector('input[name="q_answer"]:checked'); 
+            if (checked) ans = checked.value;
+            quizState[currentQuestion].answer = ans;
+            quizState[currentQuestion].status = ans.trim() !== '' ? 'answered' : 'unanswered';
+            updateNavStyles();
+        }
+
+        function markForReview() {
+            if (quizState[currentQuestion].status !== 'locked') { quizState[currentQuestion].status = 'flagged'; updateNavStyles(); saveAndNext(); }
+        }
+
+        function saveAndNext() {
+            let next = -1;
+            for (let i = currentQuestion + 1; i < userQuestions.length; i++) { if (quizState[i].status === 'unanswered' || quizState[i].status === 'flagged') { next = i; break; } }
+            if (next === -1) { for (let i = 0; i < userQuestions.length; i++) { if (quizState[i].status === 'unanswered' || quizState[i].status === 'flagged') { next = i; break; } } }
+            if (next !== -1) loadQuestion(next); else finishQuizConfirmation();
+        }
+
+        function startTimer() {
+            updateTimerUI(); clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                quizState[currentQuestion].timeLeft--; updateTimerUI();
+                if (quizState[currentQuestion].timeLeft <= 0) {
+                    clearInterval(timerInterval); quizState[currentQuestion].status = 'locked';
+                    updateNavStyles(); showToast("انتهى وقت هذا السؤال!"); setTimeout(saveAndNext, 2000);
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const t = Math.max(0, quizState[currentQuestion].timeLeft); const d = document.getElementById('timerDisplay'); if (!d) return;
+            d.textContent = `${Math.floor(t / 60).toString().padStart(2,'0')}:${(t % 60).toString().padStart(2,'0')}`;
+            d.classList.toggle('time-warning', t <= 15);
+        }
+
+        function finishQuizConfirmation() {
+            const un = quizState.filter(q => q.status === 'unanswered').length;
+            const fl = quizState.filter(q => q.status === 'flagged').length;
+            let msg = un > 0 || fl > 0 ? `لديك ${un} سؤال غير مجاب و ${fl} مؤجل. هل أنت متأكد من تسليم الاختبار؟` : 'هل أنت متأكد من تسليم الاختبار؟';
+            if (confirm(msg)) finishQuiz();
+        }
+
+        async function finishQuiz() {
+            clearInterval(timerInterval); isQuizActive = false;
+            
+            const secs = Math.floor((Date.now() - startTime) / 1000); 
+            const timeSpent = `${Math.floor(secs/60)} دقيقة و ${secs%60} ثانية`;
+
+            const ppq = 100 / userQuestions.length; let score = 0;
+            quizState.forEach((s, i) => { 
+                s.questionId = i + 1; 
+                s.type = userQuestions[i].type; 
+                s.questionText = userQuestions[i].q; 
+                s.correctAnswer = userQuestions[i].answer || ''; 
+                s.userAnswer = s.answer || '';
+                
+                if (s.answer && s.answer.replace(/\s+/g, ' ').trim() === userQuestions[i].answer.replace(/\s+/g, ' ').trim()) score += ppq;
+            });
+            const final = Math.round(score);
+            const passed = final >= PASSING_SCORE;
+
+            localStorage.setItem(CONFIG.STORAGE_KEY, passed ? 'submitted' : 'submitted_failed');
+            localStorage.setItem('KIB_EMP_NAME', employeeInfo.name);
+            localStorage.setItem('KIB_FINAL_SCORE', final.toString());
+            localStorage.setItem(CONFIG.EXIT_COUNT_KEY, exitCount.toString());
+
+            if (passed) showSuccessScreen(final);
+            else showFailScreen(final);
+            
+            const fd = new FormData();
+            fd.append('timestamp', new Date().toLocaleString('ar-SA')); 
+            fd.append('empId', employeeInfo.id); 
+            fd.append('empName', employeeInfo.name); 
+            fd.append('department', employeeInfo.department); 
+            fd.append('jobTitle', employeeInfo.jobTitle); 
+            fd.append('score', final.toString()); 
+            fd.append('timeSpent', timeSpent); 
+            fd.append('exitCount', exitCount.toString());
+            fd.append('passed', passed.toString()); 
+            fd.append('details', JSON.stringify(quizState)); 
+            
+            try {
+                await fetch(CONFIG.GOOGLE_SCRIPT_URL, { method: 'POST', body: fd, mode: 'no-cors' });
+                const st = passed ? document.getElementById('successStatusDisplay') : document.getElementById('failStatusDisplay');
+                if(st) {
+                    st.innerHTML = '<i class="fas fa-check"></i> تم الحفظ بنجاح.';
+                    st.classList.replace('bg-red-50', 'bg-green-50'); st.classList.replace('text-red-800', 'text-green-800');
+                    st.classList.replace('bg-red-50', 'bg-green-50'); st.classList.replace('text-red-800', 'text-green-800');
+                }
+            } catch (e) { 
+               console.error('Network error during dispatch', e);
+            }
+        }
+
+        function showSuccessScreen(score) {
+            document.getElementById('employeeApp').classList.add('hidden');
+            document.getElementById('failScreen')?.classList.add('hidden');
+            const scoreEl = document.getElementById('successScoreDisplay');
+            if (scoreEl) scoreEl.textContent = score + '%';
+            document.getElementById('successScreen').classList.remove('hidden');
+        }
+
+        function showFailScreen(score) {
+            document.getElementById('employeeApp').classList.add('hidden');
+            document.getElementById('successScreen')?.classList.add('hidden');
+            const scoreEl = document.getElementById('failScoreDisplay');
+            if (scoreEl) scoreEl.textContent = score + '%';
+            document.getElementById('failScreen').classList.remove('hidden');
+        }
+
+        function showToast(m) { const t = document.getElementById('validationToast'); if (!t) return; document.getElementById('toastMessage').textContent = m; t.classList.remove('hidden'); clearTimeout(window._toastT); window._toastT = setTimeout(hideToast, 3000); }
+        function hideToast() { document.getElementById('validationToast').classList.add('hidden'); }
+
+        function showAdminLogin() { document.getElementById('adminModal').classList.remove('hidden'); document.getElementById('adminPassInput').value = ''; document.getElementById('adminAuthError').classList.add('hidden'); }
+        function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
+        function logoutAdmin() { currentAdmin = null; document.getElementById('adminDashboard').classList.add('hidden'); document.getElementById('employeeApp').classList.remove('hidden'); location.reload(); }
+
+        function adminLoginHandler() {
+            const pw = document.getElementById('adminPassInput').value.trim();
+            if (CONFIG.ADMINS[pw]) {
+                currentAdmin = CONFIG.ADMINS[pw];
+                document.getElementById('adminModal').classList.add('hidden');
+                document.getElementById('employeeApp').classList.add('hidden');
+                document.getElementById('failScreen')?.classList.add('hidden');
+                document.getElementById('successScreen')?.classList.add('hidden');
+                document.getElementById('adminDashboard').classList.remove('hidden');
+                updateAdminUI(); loadDashboard();
+            } else { document.getElementById('adminAuthError').classList.remove('hidden'); document.getElementById('adminAuthError').textContent = 'كلمة المرور غير صحيحة'; }
+        }
+
+        function updateAdminUI() {
+            if (!currentAdmin) return;
+            document.getElementById('adminHeaderTitle').textContent = `إدارة التقييم والنتائج - الامتثال`;
+            const exportBtn = document.getElementById('exportBtn');
+            if (exportBtn) exportBtn.style.display = currentAdmin.role !== 'super_admin' ? 'none' : '';
+            document.getElementById('adminInfo').classList.remove('hidden');
+            document.getElementById('adminInfoText').textContent = `مسجل دخول: ${currentAdmin.name}`;
+            document.getElementById('adminEmailText').textContent = currentAdmin.email;
+        }
+
+        async function loadDashboard() {
+            const tbody = document.getElementById('responsesTableBody'); if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-gray-500"><i class="fas fa-spinner fa-spin"></i> جاري تحميل البيانات...</td></tr>';
+            try {
+                const res = await fetch(CONFIG.GOOGLE_SCRIPT_URL); const data = await res.json();
+                allServerData = data; renderAdminData();
+            } catch (e) { tbody.innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-red-500">تعذر الاتصال بالسيرفر.</td></tr>'; }
+        }
+        function refreshDashboard() { loadDashboard(); }
+
+        function renderAdminData() {
+            if (!allServerData || !allServerData.length) {
+                document.getElementById('responsesTableBody').innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-gray-500">لا توجد بيانات حالياً</td></tr>';
+                return;
+            }
+            document.getElementById('totalParticipants').textContent = allServerData.length;
+            let total = 0, top = 0;
+            allServerData.forEach(d => {
+                const s = parseFloat(d.score) || 0; total += s; if (s > top) top = s;
+            });
+            document.getElementById('avgScore').textContent = allServerData.length > 0 ? Math.round(total / allServerData.length) + '%' : '0%';
+            document.getElementById('topScore').textContent = top + '%';
+            
+            const tbody = document.getElementById('responsesTableBody'); tbody.innerHTML = '';
+            [...allServerData].reverse().forEach((d, idx) => {
+                const actual = allServerData.length - 1 - idx;
+                const passed = parseFloat(d.score) >= PASSING_SCORE;
+                const scoreColor = d.score >= 80 ? 'text-green-600' : (d.score >= 60 ? 'text-yellow-600' : 'text-red-600');
+                
+                const actionCell = `<button class="bg-red-100 hover:bg-red-200 text-red-700 p-2 rounded transition shadow-sm" onclick="viewDetails(${actual})" title="مشاهدة الإجابات"><i class="fas fa-eye"></i></button>`;
+
+                const row = document.createElement('tr'); row.className = 'border-b hover:bg-gray-50';
+                row.innerHTML = `<td class="p-3 text-gray-500 text-xs">${(d.timestamp||'-').split(',')[0]}</td><td class="p-3 font-bold text-gray-700">${d.empId||'-'}</td><td class="p-3 font-bold text-[#7A2128]">${d.empName||'-'}</td><td class="p-3 font-semibold text-gray-700 text-xs">${d.department||'-'}</td><td class="p-3 text-center text-xs font-bold text-gray-500">${d.timeSpent||'-'}</td><td class="p-3 text-center font-black text-xl ${scoreColor}">${d.score||0}%</td><td class="p-3 text-center font-bold text-gray-600">${d.exitCount||0}</td><td class="p-3 text-center font-bold text-xs ${passed ? 'text-green-600' : 'text-red-500'}">${passed ? 'مجتاز' : 'غير مجتاز'}</td><td class="p-3 text-center">${actionCell}</td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        function viewDetails(index) {
+            const data = allServerData[index];
+            if(!data) return;
+            document.getElementById('viewEmpName').textContent = data.empName;
+            const content = document.getElementById('viewContent');
+            content.innerHTML = '';
+            try {
+                const details = JSON.parse(data.details || '[]');
+                if(details.length === 0) {
+                    content.innerHTML = '<p class="text-center text-gray-500 font-bold p-8">لا توجد تفاصيل محفوظة لهذا الاختبار.</p>';
+                } else {
+                    details.forEach((q, i) => {
+                        const isCorrect = q.userAnswer && q.userAnswer.trim() === q.correctAnswer.trim();
+                        const colorClass = isCorrect ? 'border-green-200 bg-green-50' : 'border-red-200 bg-red-50';
+                        const icon = isCorrect ? '<i class="fas fa-check-circle text-green-500 text-xl mt-0.5"></i>' : '<i class="fas fa-times-circle text-red-500 text-xl mt-0.5"></i>';
+                        
+                        const card = document.createElement('div');
+                        card.className = `border ${colorClass} rounded-xl p-4 shadow-sm`;
+                        card.innerHTML = `
+                            <div class="flex gap-3 items-start mb-3">
+                                ${icon}
+                                <h4 class="font-bold text-gray-800 text-sm md:text-base flex-1 leading-relaxed">سؤال ${i+1}: ${q.questionText}</h4>
+                            </div>
+                            <div class="pl-2 md:pl-8 space-y-2 text-xs md:text-sm">
+                                <p class="text-gray-700 bg-white p-2 rounded border border-gray-100"><strong>إجابة الموظف:</strong> <span class="${isCorrect ? 'text-green-700 font-bold' : 'text-red-600 font-bold'}">${q.userAnswer || 'لم يُجب'}</span></p>
+                                ${!isCorrect ? `<p class="text-green-800 bg-green-100/50 p-2 rounded border border-green-200"><strong>الإجابة الصحيحة:</strong> ${q.correctAnswer}</p>` : ''}
+                            </div>
+                        `;
+                        content.appendChild(card);
+                    });
+                }
+            } catch(e) {
+                content.innerHTML = '<p class="text-red-500 text-center font-bold p-8">تعذر قراءة البيانات المحفوظة.</p>';
+            }
+            document.getElementById('viewModal').classList.remove('hidden');
+        }
+
+        function closeViewModal() {
+            document.getElementById('viewModal').classList.add('hidden');
+        }
+
+        // خوارزمية التصدير الذكية والمستقلة كلياً (بدون مكتبات خارجية لتخطي حظر الشبكات)
+        function exportToExcel() {
+            if (!allServerData || allServerData.length === 0) {
+                alert('لا توجد بيانات للتصدير');
+                return;
+            }
+
+            try {
+                // 1. تحديد أقصى عدد من الأسئلة لتوحيد الأعمدة
+                let maxQuestions = 0;
+                allServerData.forEach(d => {
+                    try {
+                        let details = typeof d.details === 'string' ? JSON.parse(d.details || '[]') : (d.details || []);
+                        if (details.length > maxQuestions) maxQuestions = details.length;
+                    } catch(e){}
+                });
+
+                // 2. بناء هيكل XML/HTML ذكي يفهمه الإكسل كملف أصلي متكامل
+                let tableHTML = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="UTF-8">
+                    <!-- كود برمجي دقيق لإجبار الإكسل على فتح الشيت من اليمين لليسار -->
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <x:ExcelWorkbook>
+                            <x:ExcelWorksheets>
+                                <x:ExcelWorksheet>
+                                    <x:Name>نتائج الامتثال</x:Name>
+                                    <x:WorksheetOptions>
+                                        <x:DisplayRightToLeft/>
+                                    </x:WorksheetOptions>
+                                </x:ExcelWorksheet>
+                            </x:ExcelWorksheets>
+                        </x:ExcelWorkbook>
+                    </xml>
+                    <![endif]-->
+                    <style>
+                        table { border-collapse: collapse; width: 100%; direction: rtl; font-family: 'Segoe UI', Tahoma, sans-serif; }
+                        th { background-color: #7A2128; color: white; font-weight: bold; border: 1px solid #a3a3a3; padding: 12px; text-align: center; font-size: 14px; }
+                        td { border: 1px solid #cccccc; padding: 10px; text-align: center; vertical-align: middle; font-size: 13px; }
+                        .correct { color: #059669; font-weight: bold; }
+                        .wrong { color: #DC2626; font-weight: bold; }
+                        .highlight { font-weight: bold; color: #1e293b; background-color: #f8fafc; }
+                    </style>
+                </head>
+                <body dir="rtl">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>التاريخ</th>
+                                <th>الرقم الوظيفي</th>
+                                <th>اسم الموظف</th>
+                                <th>الإدارة/الفرع</th>
+                                <th>المسمى الوظيفي</th>
+                                <th>النتيجة %</th>
+                                <th>الوقت المستغرق</th>
+                                <th>مخالفات الخروج</th>
+                                <th>الحالة</th>`;
+                
+                // إضافة عناوين الأسئلة ديناميكياً
+                for(let i = 1; i <= maxQuestions; i++) {
+                    tableHTML += `<th>سؤال ${i}</th><th>إجابة الموظف ${i}</th><th>التقييم ${i}</th>`;
+                }
+                
+                tableHTML += `</tr></thead><tbody>`;
+
+                // 3. تعبئة البيانات بصفوف الإكسل المنسقة
+                allServerData.forEach(d => {
+                    let passed = parseFloat(d.score || 0) >= 60 ? 'مجتاز' : 'غير مجتاز';
+                    // mso-number-format:'\@'; تمنع الإكسل من حذف الأصفار أو تحويل الرقم الوظيفي لمعادلة
+                    let rowHtml = `<tr>
+                        <td>${(d.timestamp || '-').split(',')[0]}</td>
+                        <td style="mso-number-format:'\\@'; font-weight: bold; font-size: 15px;">${d.empId || '-'}</td>
+                        <td class="highlight" style="font-size: 14px;">${d.empName || '-'}</td>
+                        <td>${d.department || '-'}</td>
+                        <td>${d.jobTitle || '-'}</td>
+                        <td style="font-weight: black; font-size: 16px; color: ${parseFloat(d.score)>=60 ? '#059669' : '#DC2626'};">${(d.score || '0') + '%'}</td>
+                        <td>${d.timeSpent || '-'}</td>
+                        <td style="font-weight: bold;">${d.exitCount || '0'}</td>
+                        <td class="${passed === 'مجتاز' ? 'correct' : 'wrong'}">${passed}</td>`;
+
+                    let detailsArray = [];
+                    try {
+                        detailsArray = typeof d.details === 'string' ? JSON.parse(d.details || '[]') : (d.details || []);
+                    } catch(e){}
+
+                    for(let i = 0; i < maxQuestions; i++) {
+                        if (i < detailsArray.length) {
+                            let a = detailsArray[i];
+                            let isCorrect = false;
+                            if (a.userAnswer && a.correctAnswer) {
+                                isCorrect = a.userAnswer.toString().replace(/\s+/g, ' ').trim() === a.correctAnswer.toString().replace(/\s+/g, ' ').trim();
+                            }
+                            let evalText = isCorrect ? 'صحيح' : 'خاطئ';
+                            let evalClass = isCorrect ? 'correct' : 'wrong';
+
+                            rowHtml += `<td style="text-align: right;">${a.questionText || '-'}</td>
+                                        <td style="color:#7A2128; font-weight:bold; text-align: right;">${a.userAnswer || 'لم يُجب'}</td>
+                                        <td class="${evalClass}">${evalText}</td>`;
+                        } else {
+                            rowHtml += `<td>-</td><td>-</td><td>-</td>`;
+                        }
+                    }
+                    rowHtml += `</tr>`;
+                    tableHTML += rowHtml;
+                });
+
+                tableHTML += `</tbody></table></body></html>`;
+
+                // 4. تصدير الملف كـ Excel حقيقي (بصيغة xls) عبر المتصفح مباشرة
+                // إضافة \ufeff لدعم اللغة العربية (BOM)
+                const blob = new Blob(['\ufeff' + tableHTML], { type: 'application/vnd.ms-excel;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `نتائج_تقييم_الامتثال_${new Date().getTime()}.xls`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+
+            } catch (err) {
+                console.error("Export Error Details:", err);
+                alert("حدث خطأ أثناء التصدير. يرجى المحاولة لاحقاً.");
+            }
+        }
+    </script>
+</body>
+</html>
