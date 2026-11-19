@@ -205,12 +205,49 @@
                         </div>
                         <div>
                             <label class="block text-sm font-bold mb-2 text-gray-700">اسم الموظف (رباعي) *</label>
-                            <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition" placeholder="">
+                            <input type="text" id="empName" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition" placeholder="مثال: محمد أحمد محمد">
                             <p id="empNameError" class="text-red-500 text-xs mt-1 hidden">يجب إدخال الاسم الرباعي (3 كلمات على الأقل)</p>
                         </div>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div><label class="block text-sm font-bold mb-2 text-gray-700">الإدارة / الفرع *</label><input type="text" id="empDepartment" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition"></div>
+                        <div>
+                            <label class="block text-sm font-bold mb-2 text-gray-700">الإدارة / الفرع *</label>
+                            <select id="empDepartment" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm bg-white focus:border-[#7A2128] outline-none transition">
+                                <option value="" disabled selected>-- اختر الإدارة / الفرع --</option>
+                                <option value="الإدارة العليا">الإدارة العليا</option>
+                                <option value="الإدارة المالية">الإدارة المالية</option>
+                                <option value="الخدمات الإلكترونية">الخدمات الإلكترونية</option>
+                                <option value="الشؤون الإدارية">الشؤون الإدارية</option>
+                                <option value="إدارة الامتثال">إدارة الامتثال</option>
+                                <option value="إدارة الائتمان">إدارة الائتمان</option>
+                                <option value="إدارة البحوث والتطوير">إدارة البحوث والتطوير</option>
+                                <option value="إدارة الخدمات التجارية">إدارة الخدمات التجارية</option>
+                                <option value="إدارة الخزينة">إدارة الخزينة</option>
+                                <option value="إدارة العمليات">إدارة العمليات</option>
+                                <option value="إدارة الفروع">إدارة الفروع</option>
+                                <option value="إدارة المخاطر">إدارة المخاطر</option>
+                                <option value="إدارة المراجعة الداخلية">إدارة المراجعة الداخلية</option>
+                                <option value="إدارة الموارد البشرية">إدارة الموارد البشرية</option>
+                                <option value="إدارة أعمال الشركات">إدارة أعمال الشركات</option>
+                                <option value="إدارة تقنية المعلومات">إدارة تقنية المعلومات</option>
+                                <option value="إدارة تمويل المنشآت المتوسطة">إدارة تمويل المنشآت المتوسطة</option>
+                                <option value="إدارة خدمات الجهات الإنسانية">إدارة خدمات الجهات الإنسانية</option>
+                                <option value="فرع التسعين">فرع التسعين</option>
+                                <option value="فرع الحديدة">فرع الحديدة</option>
+                                <option value="فرع الحوبان">فرع الحوبان</option>
+                                <option value="فرع المكلا">فرع المكلا</option>
+                                <option value="فرع إب">فرع إب</option>
+                                <option value="فرع تعز">فرع تعز</option>
+                                <option value="فرع خور مكسر">فرع خور مكسر</option>
+                                <option value="فرع ذمار">فرع ذمار</option>
+                                <option value="فرع شارع تعز">فرع شارع تعز</option>
+                                <option value="فرع شعوب">فرع شعوب</option>
+                                <option value="فرع صنعاء">فرع صنعاء</option>
+                                <option value="فرع عدن">فرع عدن</option>
+                                <option value="فرع مأرب">فرع مأرب</option>
+                                <option value="قسم الشؤون القانونية">قسم الشؤون القانونية</option>
+                            </select>
+                        </div>
                         <div><label class="block text-sm font-bold mb-2 text-gray-700">المسمى الوظيفي *</label><input type="text" id="empJobTitle" required class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl text-sm focus:border-[#7A2128] outline-none transition"></div>
                     </div>
                     <button type="submit" class="w-full mt-4 bg-[#7A2128] hover:bg-red-900 text-white font-black py-4 rounded-xl shadow-lg text-lg transition-all flex justify-center items-center gap-2">التحقق وبدء الاختبار <i class="fas fa-play mr-2"></i></button>
@@ -309,14 +346,84 @@
                     <span class="text-yellow-600 text-xs" id="adminEmailText"></span>
                 </div>
             </div>
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-               <div class="bg-white p-5 rounded-xl shadow-sm border-r-4 border-[#7A2128]"><p class="text-gray-500 text-xs font-bold mb-1">إجمالي المختبرين</p><p class="text-3xl font-black text-gray-800" id="totalParticipants">0</p></div> 
-                <div class="bg-white p-5 rounded-xl shadow-sm border-r-4 border-[#F5B335]"><p class="text-gray-500 text-xs font-bold mb-1">متوسط النتائج</p><p class="text-3xl font-black text-[#F5B335]" id="avgScore">0%</p></div>
-                <div class="bg-white p-5 rounded-xl shadow-sm border-r-4 border-[#10B981]"><p class="text-gray-500 text-xs font-bold mb-1">أعلى نتيجة</p><p class="text-3xl font-black text-[#10B981]" id="topScore">0%</p></div>
+
+            <!-- مؤشرات الأداء العامة (KPIs) -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                <div class="bg-white p-4 rounded-xl shadow-sm border-r-4 border-[#7A2128]">
+                    <p class="text-gray-500 text-xs font-bold mb-1">إجمالي المختبرين</p>
+                    <p class="text-2xl font-black text-gray-800" id="totalParticipants">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-r-4 border-[#10B981]">
+                    <p class="text-gray-500 text-xs font-bold mb-1">المجتازون</p>
+                    <p class="text-2xl font-black text-[#10B981]" id="totalPassed">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-r-4 border-red-500">
+                    <p class="text-gray-500 text-xs font-bold mb-1">غير المجتازين</p>
+                    <p class="text-2xl font-black text-red-600" id="totalFailed">0</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-r-4 border-blue-600">
+                    <p class="text-gray-500 text-xs font-bold mb-1">نسبة النجاح العامة</p>
+                    <p class="text-2xl font-black text-blue-600" id="overallPassRate">0%</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-r-4 border-[#F5B335]">
+                    <p class="text-gray-500 text-xs font-bold mb-1">متوسط النتائج</p>
+                    <p class="text-2xl font-black text-[#F5B335]" id="avgScore">0%</p>
+                </div>
+                <div class="bg-white p-4 rounded-xl shadow-sm border-r-4 border-emerald-600">
+                    <p class="text-gray-500 text-xs font-bold mb-1">أعلى نتيجة</p>
+                    <p class="text-2xl font-black text-emerald-600" id="topScore">0%</p>
+                </div>
             </div>
+
+            <!-- تقرير الإدارات والفروع -->
+            <div class="bg-white p-4 rounded-xl shadow-sm mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4 border-r-4 border-[#7A2128] pr-2">
+                    <div>
+                        <h3 class="text-sm md:text-base font-bold text-[#7A2128]">تقرير الإنجاز والنتائج حسب الإدارة / الفرع</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">إحصائية تفصيلية لعدد المختبرين ونسب النجاح ومتوسط الدرجات لكل جهة</p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <label class="flex items-center gap-2 text-xs font-bold text-gray-600 cursor-pointer bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                            <input type="checkbox" id="showEmptyDeptsToggle" checked onchange="renderDepartmentReport()" class="accent-[#7A2128] w-4 h-4">
+                            <span>إظهار الجهات التي لم تختبر بعد (0)</span>
+                        </label>
+                        <button onclick="exportDeptReportToExcel()" class="bg-[#7A2128] hover:bg-red-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition shadow-sm flex items-center gap-1.5">
+                            <i class="fas fa-chart-bar"></i> تصدير تقرير الإدارات (Excel)
+                        </button>
+                    </div>
+                </div>
+                <div class="overflow-x-auto max-h-[420px] overflow-y-auto border rounded-xl">
+                    <table class="w-full text-sm text-right">
+                        <thead class="bg-gray-50 text-gray-600 text-xs border-b sticky top-0 z-10">
+                            <tr>
+                                <th class="p-3 text-center w-12">#</th>
+                                <th class="p-3">الإدارة / الفرع</th>
+                                <th class="p-3 text-center">عدد المختبرين</th>
+                                <th class="p-3 text-center">المجتازون</th>
+                                <th class="p-3 text-center">غير المجتازين</th>
+                                <th class="p-3 text-center min-w-[140px]">نسبة النجاح %</th>
+                                <th class="p-3 text-center">متوسط الدرجات</th>
+                                <th class="p-3 text-center">أعلى / أدنى نتيجة</th>
+                                <th class="p-3 text-center">إجمالي المخالفات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deptReportTableBody" class="text-sm divide-y">
+                            <tr><td colspan="9" class="text-center p-6 font-bold text-gray-400">جاري تجهيز التقرير...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- سجل الموظفين والنتائج -->
             <div class="bg-white p-4 rounded-xl shadow-sm">
-                <div class="flex justify-between items-center mb-4 border-r-4 border-[#F5B335] pr-2">
-                    <h3 class="text-sm font-bold text-[#7A2128]">سجل الموظفين والنتائج</h3>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3 mb-4 border-r-4 border-[#F5B335] pr-2">
+                    <h3 class="text-sm md:text-base font-bold text-[#7A2128]">سجل الموظفين والنتائج التفصيلي</h3>
+                    <div class="flex flex-wrap gap-2 w-full md:w-auto">
+                        <select id="adminDeptFilter" onchange="renderEmployeesTable()" class="px-3 py-1.5 border border-gray-300 rounded-lg text-xs font-bold text-gray-700 bg-white focus:border-[#7A2128] outline-none">
+                            <option value="ALL">جميع الإدارات والفروع</option>
+                        </select>
+                        <input type="text" id="adminSearchInput" oninput="renderEmployeesTable()" placeholder="بحث بالاسم أو الرقم الوظيفي..." class="px-3 py-1.5 border border-gray-300 rounded-lg text-xs text-gray-700 focus:border-[#7A2128] outline-none flex-1 md:w-56">
+                    </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm text-right">
@@ -428,10 +535,47 @@
         ];
 
         const PASSING_SCORE = 60; 
+
+        // القائمة الرسمية المعتمدة للإدارات والفروع
+        const DEPARTMENTS_LIST = [
+            "الإدارة العليا",
+            "الإدارة المالية",
+            "الخدمات الإلكترونية",
+            "الشؤون الإدارية",
+            "إدارة الامتثال",
+            "إدارة الائتمان",
+            "إدارة البحوث والتطوير",
+            "إدارة الخدمات التجارية",
+            "إدارة الخزينة",
+            "إدارة العمليات",
+            "إدارة الفروع",
+            "إدارة المخاطر",
+            "إدارة المراجعة الداخلية",
+            "إدارة الموارد البشرية",
+            "إدارة أعمال الشركات",
+            "إدارة تقنية المعلومات",
+            "إدارة تمويل المنشآت المتوسطة",
+            "إدارة خدمات الجهات الإنسانية",
+            "فرع التسعين",
+            "فرع الحديدة",
+            "فرع الحوبان",
+            "فرع المكلا",
+            "فرع إب",
+            "فرع تعز",
+            "فرع خور مكسر",
+            "فرع ذمار",
+            "فرع شارع تعز",
+            "فرع شعوب",
+            "فرع صنعاء",
+            "فرع عدن",
+            "فرع مأرب",
+            "قسم الشؤون القانونية"
+        ];
+
         const CONFIG = {
-            STORAGE_KEY: "KIB_COMPLIANCE_QUIZ_80Q_V8",      
-            EXIT_COUNT_KEY: "KIB_COMPLIANCE_EXIT_80Q_V8",    
-            USER_QUESTIONS_KEY: "KIB_COMPLIANCE_Q_80Q_V8",   
+            STORAGE_KEY: "KIB_COMPLIANCE_QUIZ_80Q_V4",      
+            EXIT_COUNT_KEY: "KIB_COMPLIANCE_EXIT_80Q_V4",    
+            USER_QUESTIONS_KEY: "KIB_COMPLIANCE_Q_80Q_V4",   
             GOOGLE_SCRIPT_URL: "https://script.google.com/macros/s/AKfycbwSS5O1vu0zEn55eBe3VPBbLfUy77Ge993s6p0B_h54WK7KIkjglbGcc8xc1Py-NerY/exec",
             RESET_PASSWORD: "KIB2026",
             ADMINS: {
@@ -944,34 +1088,301 @@
         }
 
         function renderAdminData() {
+            populateAdminDeptFilter();
+
             if (!allServerData || !allServerData.length) {
+                document.getElementById('totalParticipants').textContent = '0';
+                document.getElementById('totalPassed').textContent = '0';
+                document.getElementById('totalFailed').textContent = '0';
+                document.getElementById('overallPassRate').textContent = '0%';
+                document.getElementById('avgScore').textContent = '0%';
+                document.getElementById('topScore').textContent = '0%';
                 document.getElementById('responsesTableBody').innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-gray-500">لا توجد بيانات حالياً</td></tr>';
+                renderDepartmentReport();
                 return;
             }
-            document.getElementById('totalParticipants').textContent = allServerData.length;
-            let total = 0, top = 0;
+
+            let total = 0, top = 0, passedCount = 0;
             allServerData.forEach(d => {
                 const s = parseFloat(d.score) || 0;
                 total += s;
                 if (s > top) top = s;
+                if (s >= PASSING_SCORE) passedCount++;
             });
-            document.getElementById('avgScore').textContent = allServerData.length > 0 ? Math.round(total / allServerData.length) + '%' : '0%';
+
+            const failedCount = allServerData.length - passedCount;
+            const passRate = Math.round((passedCount / allServerData.length) * 100);
+
+            document.getElementById('totalParticipants').textContent = allServerData.length;
+            document.getElementById('totalPassed').textContent = passedCount;
+            document.getElementById('totalFailed').textContent = failedCount;
+            document.getElementById('overallPassRate').textContent = passRate + '%';
+            document.getElementById('avgScore').textContent = Math.round(total / allServerData.length) + '%';
             document.getElementById('topScore').textContent = top + '%';
 
-            const tbody = document.getElementById('responsesTableBody');
+            renderDepartmentReport();
+            renderEmployeesTable();
+        }
+
+        // تعبئة قائمة التصفية حسب الإدارة/الفرع في لوحة المشرف
+        function populateAdminDeptFilter() {
+            const filterSelect = document.getElementById('adminDeptFilter');
+            if (!filterSelect) return;
+            const currentVal = filterSelect.value || 'ALL';
+
+            const uniqueDepts = new Set(DEPARTMENTS_LIST);
+            (allServerData || []).forEach(d => {
+                const dept = (d.department || '').toString().trim();
+                if (dept) uniqueDepts.add(dept);
+            });
+
+            filterSelect.innerHTML = '<option value="ALL">جميع الإدارات والفروع</option>';
+            uniqueDepts.forEach(dept => {
+                const opt = document.createElement('option');
+                opt.value = dept;
+                opt.textContent = dept;
+                filterSelect.appendChild(opt);
+            });
+
+            filterSelect.value = uniqueDepts.has(currentVal) ? currentVal : 'ALL';
+        }
+
+        // حساب إحصائيات كل إدارة وفرع
+        function buildDepartmentStats() {
+            const statsMap = {};
+            DEPARTMENTS_LIST.forEach(dept => {
+                statsMap[dept] = { name: dept, total: 0, passed: 0, failed: 0, scoreSum: 0, maxScore: 0, minScore: null, exits: 0 };
+            });
+
+            (allServerData || []).forEach(d => {
+                const deptName = (d.department || 'غير محدد').toString().trim() || 'غير محدد';
+                if (!statsMap[deptName]) {
+                    statsMap[deptName] = { name: deptName, total: 0, passed: 0, failed: 0, scoreSum: 0, maxScore: 0, minScore: null, exits: 0 };
+                }
+                const entry = statsMap[deptName];
+                const score = parseFloat(d.score) || 0;
+                const exits = parseInt(d.exitCount) || 0;
+
+                entry.total += 1;
+                entry.scoreSum += score;
+                entry.exits += exits;
+                if (score >= PASSING_SCORE) entry.passed += 1;
+                else entry.failed += 1;
+
+                if (score > entry.maxScore) entry.maxScore = score;
+                if (entry.minScore === null || score < entry.minScore) entry.minScore = score;
+            });
+
+            return Object.values(statsMap).map(item => ({
+                ...item,
+                passRate: item.total > 0 ? Math.round((item.passed / item.total) * 100) : 0,
+                avgScore: item.total > 0 ? Math.round(item.scoreSum / item.total) : 0,
+                minScore: item.minScore === null ? 0 : item.minScore
+            }));
+        }
+
+        // عرض جدول تقرير الإدارات والفروع
+        function renderDepartmentReport() {
+            const tbody = document.getElementById('deptReportTableBody');
+            if (!tbody) return;
+
+            const showEmpty = document.getElementById('showEmptyDeptsToggle')?.checked ?? true;
+            let stats = buildDepartmentStats();
+
+            if (!showEmpty) {
+                stats = stats.filter(s => s.total > 0);
+            }
+
+            // ترتيب الجهات بحيث تظهر الجهات ذات العدد الأكبر أولاً
+            stats.sort((a, b) => b.total - a.total || b.passRate - a.passRate);
+
+            if (stats.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center p-6 font-bold text-gray-500">لا توجد نتائج مسجلة لأي إدارة أو فرع حالياً</td></tr>';
+                return;
+            }
+
             tbody.innerHTML = '';
-            [...allServerData].reverse().forEach((d, idx) => {
-                const actual = allServerData.length - 1 - idx;
+            stats.forEach((s, index) => {
+                const rateColor = s.total === 0 ? 'bg-gray-300' : (s.passRate >= 80 ? 'bg-green-500' : (s.passRate >= 60 ? 'bg-yellow-500' : 'bg-red-500'));
+                const rowBg = s.total === 0 ? 'bg-gray-50/70 text-gray-400' : 'hover:bg-red-50/40';
+
+                const tr = document.createElement('tr');
+                tr.className = rowBg;
+                tr.innerHTML = `
+                    <td class="p-3 text-center text-xs font-bold">${index + 1}</td>
+                    <td class="p-3 font-bold ${s.total > 0 ? 'text-[#7A2128] cursor-pointer hover:underline' : 'text-gray-500'}" onclick="filterByDepartment('${s.name.replace(/'/g, "\\'")}')">${s.name}</td>
+                    <td class="p-3 text-center font-black ${s.total > 0 ? 'text-gray-800' : 'text-gray-400'}">${s.total}</td>
+                    <td class="p-3 text-center font-bold ${s.passed > 0 ? 'text-green-600' : 'text-gray-400'}">${s.passed}</td>
+                    <td class="p-3 text-center font-bold ${s.failed > 0 ? 'text-red-500' : 'text-gray-400'}">${s.failed}</td>
+                    <td class="p-3 text-center">
+                        <div class="flex items-center gap-2 justify-center">
+                            <div class="w-20 bg-gray-200 rounded-full h-2 overflow-hidden">
+                                <div class="${rateColor} h-2 rounded-full" style="width: ${s.passRate}%"></div>
+                            </div>
+                            <span class="text-xs font-black w-9 text-left">${s.total > 0 ? s.passRate + '%' : '-'}</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-center font-bold ${s.total > 0 ? 'text-gray-700' : 'text-gray-400'}">${s.total > 0 ? s.avgScore + '%' : '-'}</td>
+                    <td class="p-3 text-center text-xs font-bold">
+                        ${s.total > 0 ? `<span class="text-green-600">${s.maxScore}%</span> / <span class="text-red-500">${s.minScore}%</span>` : '-'}
+                    </td>
+                    <td class="p-3 text-center font-bold ${s.exits > 0 ? 'text-orange-600' : 'text-gray-400'}">${s.exits}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // النقر على اسم الإدارة من التقرير لتصفية جدول الموظفين مباشرة
+        function filterByDepartment(deptName) {
+            const filterSelect = document.getElementById('adminDeptFilter');
+            if (filterSelect) {
+                filterSelect.value = deptName;
+                renderEmployeesTable();
+                filterSelect.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // عرض جدول الموظفين مع دعم التصفية والبحث
+        function renderEmployeesTable() {
+            const tbody = document.getElementById('responsesTableBody');
+            if (!tbody) return;
+
+            const selectedDept = document.getElementById('adminDeptFilter')?.value || 'ALL';
+            const searchQuery = (document.getElementById('adminSearchInput')?.value || '').trim().toLowerCase();
+
+            const filteredItems = [...allServerData].map((d, originalIndex) => ({ d, originalIndex })).reverse().filter(({ d }) => {
+                const deptMatch = selectedDept === 'ALL' || (d.department || '').toString().trim() === selectedDept;
+                const searchMatch = !searchQuery ||
+                    (d.empName || '').toString().toLowerCase().includes(searchQuery) ||
+                    (d.empId || '').toString().toLowerCase().includes(searchQuery) ||
+                    (d.jobTitle || '').toString().toLowerCase().includes(searchQuery);
+                return deptMatch && searchMatch;
+            });
+
+            if (filteredItems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center p-8 font-bold text-gray-500">لا توجد سجلات مطابقة لخيارات البحث أو التصفية</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+            filteredItems.forEach(({ d, originalIndex }) => {
                 const passed = parseFloat(d.score) >= PASSING_SCORE;
                 const scoreColor = d.score >= 80 ? 'text-green-600' : (d.score >= 60 ? 'text-yellow-600' : 'text-red-600');
-
-                const actionCell = `<button class="bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded transition shadow-sm" onclick="viewDetails(${actual})" title="مشاهدة الإجابات"><i class="fas fa-eye"></i></button>`;
+                const actionCell = `<button class="bg-blue-100 hover:bg-blue-200 text-blue-700 p-2 rounded transition shadow-sm" onclick="viewDetails(${originalIndex})" title="مشاهدة الإجابات"><i class="fas fa-eye"></i></button>`;
 
                 const row = document.createElement('tr');
                 row.className = 'border-b hover:bg-gray-50';
-                row.innerHTML = `<td class="p-3 text-gray-500 text-xs">${(d.timestamp || '-').split(',')[0]}</td><td class="p-3 font-bold text-gray-700">${d.empId || '-'}</td><td class="p-3 font-bold text-[#7A2128]">${d.empName || '-'}</td><td class="p-3 font-semibold text-gray-700 text-xs">${d.department || '-'}</td><td class="p-3 text-center text-xs font-bold text-gray-500">${d.timeSpent || '-'}</td><td class="p-3 text-center font-black text-xl ${scoreColor}">${d.score || 0}%</td><td class="p-3 text-center font-bold text-gray-600">${d.exitCount || 0}</td><td class="p-3 text-center font-bold text-xs ${passed ? 'text-green-600' : 'text-red-500'}">${passed ? 'مجتاز' : 'غير مجتاز'}</td><td class="p-3 text-center">${actionCell}</td>`;
+                row.innerHTML = `<td class="p-3 text-gray-500 text-xs">${(d.timestamp || '-').split(',')[0]}</td><td class="p-3 font-bold text-gray-700">${d.empId || '-'}</td><td class="p-3 font-bold text-[#7A2128]">${d.empName || '-'}</td><td class="p-3 font-semibold text-gray-700 text-xs">${d.department || '-'}<div class="text-[10px] text-gray-400 font-normal">${d.jobTitle || ''}</div></td><td class="p-3 text-center text-xs font-bold text-gray-500">${d.timeSpent || '-'}</td><td class="p-3 text-center font-black text-xl ${scoreColor}">${d.score || 0}%</td><td class="p-3 text-center font-bold text-gray-600">${d.exitCount || 0}</td><td class="p-3 text-center font-bold text-xs ${passed ? 'text-green-600' : 'text-red-500'}">${passed ? 'مجتاز' : 'غير مجتاز'}</td><td class="p-3 text-center">${actionCell}</td>`;
                 tbody.appendChild(row);
             });
+        }
+
+        // تصدير تقرير الإدارات والفروع إلى ملف Excel منسق
+        function exportDeptReportToExcel() {
+            try {
+                const showEmpty = document.getElementById('showEmptyDeptsToggle')?.checked ?? true;
+                let stats = buildDepartmentStats();
+                if (!showEmpty) stats = stats.filter(s => s.total > 0);
+                stats.sort((a, b) => b.total - a.total || b.passRate - a.passRate);
+
+                let tableHTML = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                <head>
+                    <meta charset="UTF-8">
+                    <!--[if gte mso 9]>
+                    <xml>
+                        <x:ExcelWorkbook>
+                            <x:ExcelWorksheets>
+                                <x:ExcelWorksheet>
+                                    <x:Name>تقرير الإدارات والفروع</x:Name>
+                                    <x:WorksheetOptions>
+                                        <x:DisplayRightToLeft/>
+                                    </x:WorksheetOptions>
+                                </x:ExcelWorksheet>
+                            </x:ExcelWorksheets>
+                        </x:ExcelWorkbook>
+                    </xml>
+                    <![endif]-->
+                    <style>
+                        table { border-collapse: collapse; width: 100%; direction: rtl; font-family: 'Segoe UI', Tahoma, sans-serif; }
+                        th { background-color: #7A2128; color: white; font-weight: bold; border: 1px solid #a3a3a3; padding: 12px; text-align: center; font-size: 14px; }
+                        td { border: 1px solid #cccccc; padding: 10px; text-align: center; vertical-align: middle; font-size: 13px; }
+                        .dept { text-align: right; font-weight: bold; color: #1e293b; }
+                        .passed { color: #059669; font-weight: bold; }
+                        .failed { color: #DC2626; font-weight: bold; }
+                        .total-row td { background-color: #f3f4f6; font-weight: bold; font-size: 14px; }
+                    </style>
+                </head>
+                <body dir="rtl">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>م</th>
+                                <th>الإدارة / الفرع</th>
+                                <th>عدد المختبرين</th>
+                                <th>عدد المجتازين</th>
+                                <th>غير المجتازين</th>
+                                <th>نسبة النجاح %</th>
+                                <th>متوسط النتائج %</th>
+                                <th>أعلى نتيجة %</th>
+                                <th>أدنى نتيجة %</th>
+                                <th>إجمالي المخالفات</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+
+                let grandTotal = 0, grandPassed = 0, grandFailed = 0, grandExits = 0, grandScoreSum = 0;
+
+                stats.forEach((s, idx) => {
+                    grandTotal += s.total;
+                    grandPassed += s.passed;
+                    grandFailed += s.failed;
+                    grandExits += s.exits;
+                    grandScoreSum += s.scoreSum;
+
+                    tableHTML += `<tr>
+                        <td>${idx + 1}</td>
+                        <td class="dept">${s.name}</td>
+                        <td style="font-weight:bold;">${s.total}</td>
+                        <td class="passed">${s.passed}</td>
+                        <td class="failed">${s.failed}</td>
+                        <td style="font-weight:bold;">${s.total > 0 ? s.passRate + '%' : '-'}</td>
+                        <td>${s.total > 0 ? s.avgScore + '%' : '-'}</td>
+                        <td class="passed">${s.total > 0 ? s.maxScore + '%' : '-'}</td>
+                        <td class="failed">${s.total > 0 ? s.minScore + '%' : '-'}</td>
+                        <td>${s.exits}</td>
+                    </tr>`;
+                });
+
+                const grandPassRate = grandTotal > 0 ? Math.round((grandPassed / grandTotal) * 100) + '%' : '0%';
+                const grandAvgScore = grandTotal > 0 ? Math.round(grandScoreSum / grandTotal) + '%' : '0%';
+
+                tableHTML += `<tr class="total-row">
+                    <td colspan="2">الإجمالي العام</td>
+                    <td>${grandTotal}</td>
+                    <td class="passed">${grandPassed}</td>
+                    <td class="failed">${grandFailed}</td>
+                    <td>${grandPassRate}</td>
+                    <td>${grandAvgScore}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>${grandExits}</td>
+                </tr>`;
+
+                tableHTML += `</tbody></table></body></html>`;
+
+                const blob = new Blob(['\ufeff' + tableHTML], { type: 'application/vnd.ms-excel;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `تقرير_الإدارات_والفروع_الامتثال_${new Date().getTime()}.xls`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                console.error("Dept Export Error:", err);
+                showToast("حدث خطأ أثناء تصدير تقرير الإدارات.");
+            }
         }
 
         function viewDetails(index) {
